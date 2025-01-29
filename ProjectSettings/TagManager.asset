@@ -4,10 +4,9 @@
 TagManager:
   serializedVersion: 3
   tags:
-  - Building
-  - Home_1
-  - Home_2
-  - Home_3
+  - Shop
+  - Farm
+  - Home
   layers:
   - Default
   - TransparentFX

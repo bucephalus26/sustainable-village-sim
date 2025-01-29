@@ -14,14 +14,17 @@ public class Villager : MonoBehaviour {
     [Header("Profession Settings")]
     public ProfessionType professionType;
 
-
     public string trait;  // Traits (e.g., hardworking, lazy, social, loner)
 
     // Needs
     [SerializeField] public float hunger = 100f;
     [SerializeField] public float rest = 100f;
 
-    public Vector3 position; // Spawn position
+    // Movement
+    public Vector3 position;
+    private WorkplaceFinder workplaceFinder;
+    private Transform workplace;
+    private Transform home;
     private VillagerMovement movement;
 
     void Start()
@@ -29,18 +32,38 @@ public class Villager : MonoBehaviour {
 
         // Initialise profession
         AssignProfession(professionType);
-
+        workplaceFinder = gameObject.AddComponent<WorkplaceFinder>();
         movement = gameObject.AddComponent<VillagerMovement>();
-        SetRandomTargetPosition();
-    }
 
+        // Find home (all villagers go home when not working)
+        home = GameObject.FindGameObjectWithTag("Home").transform;
+        workplace = workplaceFinder.FindWorkplace(professionType);
+
+        // Start by moving to workplace
+        if (workplace != null)
+        {
+            movement.SetTargetPosition(workplace.position);
+        }
+    }
 
     void Update() {
         movement.MoveToTarget();
         if (movement.HasReachedTarget())
         {
-            SetRandomTargetPosition();
+            Debug.Log($"{name} reached target. Moving to {(movement.TargetIsWorkplace ? "work" : "home")}.");
+            // Alternate between workplace and home
+            if (movement.TargetIsWorkplace)
+            {
+                movement.SetTargetPosition(home.position);
+                movement.TargetIsWorkplace = false;
+            }
+            else
+            {
+                movement.SetTargetPosition(workplace.position);
+                movement.TargetIsWorkplace = true;
+            }
         }
+
 
         // Decrease needs over time
         hunger -= 0.1f * Time.deltaTime;
@@ -59,12 +82,6 @@ public class Villager : MonoBehaviour {
             Debug.Log($"{name} is idle, no profession assigned.");
         }
 
-    }
-
-    private void SetRandomTargetPosition()
-    {
-        Vector3 newTarget = new Vector3(Random.Range(-10f, 10f), Random.Range(-10f, 10f), 0);
-        movement.SetTargetPosition(newTarget);
     }
 
     private void AssignProfession(ProfessionType type)
