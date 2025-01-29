@@ -17,8 +17,8 @@ public class Villager : MonoBehaviour {
     public string trait;  // Traits (e.g., hardworking, lazy, social, loner)
 
     // Needs
-    [SerializeField] public float hunger = 100f;
-    [SerializeField] public float rest = 100f;
+    private VillagerNeeds needs;
+    private bool isFulfillingNeed = false;
 
     // Movement
     public Vector3 position;
@@ -35,6 +35,10 @@ public class Villager : MonoBehaviour {
         workplaceFinder = gameObject.AddComponent<WorkplaceFinder>();
         movement = gameObject.AddComponent<VillagerMovement>();
 
+        // Initialise needs
+        needs = gameObject.AddComponent<VillagerNeeds>();
+        needs.Initialise();
+
         // Find home (all villagers go home when not working)
         home = GameObject.FindGameObjectWithTag("Home").transform;
         workplace = workplaceFinder.FindWorkplace(professionType);
@@ -47,41 +51,81 @@ public class Villager : MonoBehaviour {
     }
 
     void Update() {
+        needs.UpdateNeeds();
+
+        string urgentNeed = needs.GetMostUrgentNeed();
+        if (urgentNeed != "None" && !isFulfillingNeed)
+        {
+            HandleNeed(urgentNeed);
+        }
+        else if (!isFulfillingNeed)
+        {
+            HandleWork(); // Default to work if no urgent needs
+        }
+
         movement.MoveToTarget();
         if (movement.HasReachedTarget())
         {
-            Debug.Log($"{name} reached target. Moving to {(movement.TargetIsWorkplace ? "work" : "home")}.");
-            // Alternate between workplace and home
-            if (movement.TargetIsWorkplace)
+            Debug.Log($"{name} reached target.");
+            if (isFulfillingNeed)
             {
-                movement.SetTargetPosition(home.position);
-                movement.TargetIsWorkplace = false;
+                FulfillNeed(urgentNeed); // Replenish needs when target is reached
             }
-            else
-            {
-                movement.SetTargetPosition(workplace.position);
-                movement.TargetIsWorkplace = true;
-            }
+            isFulfillingNeed = false; // Reset need fulfillment flag
         }
 
 
-        // Decrease needs over time
-        hunger -= 0.1f * Time.deltaTime;
-        rest -= 0.05f * Time.deltaTime;
-
-        // Clamp needs to avoid negative values
-        hunger = Mathf.Clamp(hunger, 0, 100);
-        rest = Mathf.Clamp(rest, 0, 100);
-
         // Work
-        if (profession != null)
-        {
+        if (profession != null && !isFulfillingNeed)
+        { // Only work if not fulfilling a need
             profession.Work();
-        } else
+        }
+        else if (profession == null)
         {
             Debug.Log($"{name} is idle, no profession assigned.");
         }
 
+    }
+
+    private void HandleNeed(string need)
+    {
+        isFulfillingNeed = true;
+        movement.TargetIsWorkplace = false;
+        switch (need)
+        {
+            case "Hunger":
+                Transform restaurant = workplaceFinder.FindRestaurant();
+                movement.SetTargetPosition(restaurant.position);
+                break;
+            case "Rest":
+                home = workplaceFinder.FindHome();
+                movement.SetTargetPosition(home.position);
+                break;
+        }
+    }
+
+    private void FulfillNeed(string need)
+    {
+        switch (need)
+        {
+            case "Hunger":
+                needs.Hunger = 100f; // Replenish hunger
+                Debug.Log($"{name} ate at the restaurant. Hunger replenished.");
+                break;
+            case "Rest":
+                needs.Rest = 100f; // Replenish rest
+                Debug.Log($"{name} rested at home. Rest replenished.");
+                break;
+        }
+
+        // Return to work after fulfilling the need
+        HandleWork();
+    }
+
+    private void HandleWork()
+    {
+        Transform workplace = workplaceFinder.FindWorkplace(professionType);
+        movement.SetTargetPosition(workplace.position);
     }
 
     private void AssignProfession(ProfessionType type)
