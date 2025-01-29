@@ -5,6 +5,8 @@ public class VillagerMovement : MonoBehaviour
     public float moveSpeed = 15f; // Speed of movement
     private Vector3 targetPosition; // Current target position
 
+    public bool TargetIsWorkplace { get; set; } // Target type
+
     public void SetTargetPosition(Vector3 target)
     {
         targetPosition = target;
