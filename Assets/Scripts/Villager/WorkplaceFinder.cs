@@ -19,4 +19,14 @@ public class WorkplaceFinder : MonoBehaviour
         }
     }
 
+    public Transform FindRestaurant()
+    {
+        return GameObject.FindGameObjectWithTag("Restaurant").transform;
+    }
+
+    public Transform FindHome()
+    {
+        return GameObject.FindGameObjectWithTag("Home").transform;
+    }
+
 }
