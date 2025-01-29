@@ -98,7 +98,7 @@ public class Villager : MonoBehaviour {
                 movement.SetTargetPosition(restaurant.position);
                 break;
             case "Rest":
-                Transform home = workplaceFinder.FindHome();
+                home = workplaceFinder.FindHome();
                 movement.SetTargetPosition(home.position);
                 break;
         }
