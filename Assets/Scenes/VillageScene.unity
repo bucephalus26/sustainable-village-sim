@@ -223,9 +223,10 @@ MonoBehaviour:
   villagerName: 
   age: 0
   health: 0
-  wealth: 0
-  professionType: 1
-  trait: 
+  personalWealth: 0
+  professionData: {fileID: 11400000, guid: 0ea354632898c67428767eef762e48b0, type: 2}
+  professionManager: {fileID: 323868231}
+  trait: 0
   position: {x: 0, y: 0, z: 0}
 --- !u!212 &232500846
 SpriteRenderer:
@@ -296,6 +297,50 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 111003299}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &323868230
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 323868232}
+  - component: {fileID: 323868231}
+  m_Layer: 0
+  m_Name: ProfessionManagerObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &323868231
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 323868230}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21ed616734c2d644bbc550ef41089f98, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &323868232
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 323868230}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.67198205, y: -1.2420421, z: -0.00777351}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &438331623
 GameObject:
@@ -819,9 +864,10 @@ MonoBehaviour:
   villagerName: 
   age: 0
   health: 0
-  wealth: 0
-  professionType: 2
-  trait: 
+  personalWealth: 0
+  professionData: {fileID: 11400000, guid: 4d72f99eb391ce54582a19e45cf36d82, type: 2}
+  professionManager: {fileID: 323868231}
+  trait: 0
   position: {x: 0, y: 0, z: 0}
 --- !u!212 &722682124
 SpriteRenderer:
@@ -979,6 +1025,52 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1292251990}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &859618831
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 859618833}
+  - component: {fileID: 859618832}
+  m_Layer: 0
+  m_Name: ResourceManagerObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &859618832
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 859618831}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f90fb857f941f824aab343ae58a68a4e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  food: 100
+  communalWealth: 100
+--- !u!4 &859618833
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 859618831}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.67198205, y: -1.2420421, z: -0.00777351}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1001481122
 GameObject:
@@ -1286,9 +1378,10 @@ MonoBehaviour:
   villagerName: 
   age: 0
   health: 0
-  wealth: 0
-  professionType: 0
-  trait: 
+  personalWealth: 0
+  professionData: {fileID: 11400000, guid: 310a6e9d556426746a442678092f3dbf, type: 2}
+  professionManager: {fileID: 323868231}
+  trait: 0
   position: {x: 0, y: 0, z: 0}
 --- !u!212 &1328384215
 SpriteRenderer:
@@ -1606,3 +1699,5 @@ SceneRoots:
   - {fileID: 1292251990}
   - {fileID: 222517942}
   - {fileID: 111003299}
+  - {fileID: 859618833}
+  - {fileID: 323868232}
