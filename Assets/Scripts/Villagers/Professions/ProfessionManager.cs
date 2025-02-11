@@ -43,5 +43,9 @@ public class ProfessionManager : MonoBehaviour
         }
     }
 
+    public ProfessionType GetProfessionType()
+    {
+        return profession.ProfessionType;
+    }
 
 }

@@ -4,7 +4,7 @@ public class Shopkeeper : BaseProfession
 {
     protected override void PerformWork()
     {
-        resources.AddCommunalWealth(data.wealthGeneration);
+        resources.AddResource(ResourceType.CommunalWealth, data.wealthGeneration);
         villager.EarnWealth(data.wealthGeneration);
     }
 }

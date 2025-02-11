@@ -220,14 +220,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ebe7ceeed95ddf479eac752b7120d7d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  villagerName: 
+  villagerName: Brad
   age: 0
   health: 0
   personalWealth: 0
   professionData: {fileID: 11400000, guid: 0ea354632898c67428767eef762e48b0, type: 2}
-  professionManager: {fileID: 323868231}
-  trait: 0
-  position: {x: 0, y: 0, z: 0}
 --- !u!212 &232500846
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -861,14 +858,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ebe7ceeed95ddf479eac752b7120d7d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  villagerName: 
+  villagerName: Issaic
   age: 0
   health: 0
   personalWealth: 0
   professionData: {fileID: 11400000, guid: 4d72f99eb391ce54582a19e45cf36d82, type: 2}
-  professionManager: {fileID: 323868231}
-  trait: 0
-  position: {x: 0, y: 0, z: 0}
 --- !u!212 &722682124
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -1055,8 +1049,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f90fb857f941f824aab343ae58a68a4e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  food: 100
-  communalWealth: 100
 --- !u!4 &859618833
 Transform:
   m_ObjectHideFlags: 0
@@ -1375,14 +1367,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ebe7ceeed95ddf479eac752b7120d7d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  villagerName: 
+  villagerName: John
   age: 0
   health: 0
   personalWealth: 0
   professionData: {fileID: 11400000, guid: 310a6e9d556426746a442678092f3dbf, type: 2}
-  professionManager: {fileID: 323868231}
-  trait: 0
-  position: {x: 0, y: 0, z: 0}
 --- !u!212 &1328384215
 SpriteRenderer:
   m_ObjectHideFlags: 0

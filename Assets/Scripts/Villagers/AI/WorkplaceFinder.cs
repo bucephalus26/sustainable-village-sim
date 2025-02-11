@@ -1,43 +1,59 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class WorkplaceFinder : MonoBehaviour
 {
-    private Transform farm;
-    private Transform shop;
-    private Transform home;
-    private Transform restaurant;
+    private Dictionary<string, Transform> locations;
+    private Dictionary<string, string> professionToLocation;
 
-    void Start()
+    void Awake()
     {
-        farm = GameObject.FindGameObjectWithTag("Farm")?.transform;
-        shop = GameObject.FindGameObjectWithTag("Shop")?.transform;
-        home = GameObject.FindGameObjectWithTag("Home")?.transform;
-        restaurant = GameObject.FindGameObjectWithTag("Restaurant")?.transform;
+        InitializeLocations();
+        InitializeProfessionMappings();
     }
 
-    public Transform FindWorkplace(ProfessionType profession)
+    private void InitializeLocations()
     {
-        switch (profession)
+        locations = new Dictionary<string, Transform>
         {
-            case ProfessionType.Farmer:
-                return farm;
-            case ProfessionType.Shopkeeper:
-                return shop;
-            case ProfessionType.Priest:
-                return home;
-            default:
-                return home;
+            ["Home"] = GameObject.FindGameObjectWithTag("Home")?.transform,
+            ["Farm"] = GameObject.FindGameObjectWithTag("Farm")?.transform,
+            ["Shop"] = GameObject.FindGameObjectWithTag("Shop")?.transform,
+            ["Restaurant"] = GameObject.FindGameObjectWithTag("Restaurant")?.transform
+        };
+    }
+
+    private void InitializeProfessionMappings()
+    {
+        professionToLocation = new Dictionary<string, string>
+        {
+            ["Farmer"] = "Farm",
+            ["Shopkeeper"] = "Shop",
+            ["Priest"] = "Home",
+        };
+    }
+
+    public Transform GetCurrentWorkplace()
+    {
+        var professionManager = GetComponent<ProfessionManager>();
+        var professionType = professionManager.GetProfessionType().ToString();
+
+        if (professionToLocation.TryGetValue(professionType, out string locationKey))
+        {
+            return locations[locationKey];
         }
+
+        Debug.LogWarning($"No workplace mapping found for profession: {professionType}. Defaulting to Home.");
+        return locations["Home"];
     }
 
-    public Transform FindRestaurant()
+    public Transform GetNeedLocation(Need need)
     {
-        return restaurant;
+        return need.Name switch
+        {
+            "Hunger" => locations["Restaurant"],
+            "Rest" => locations["Home"],
+            _ => locations["Home"]
+        };
     }
-
-    public Transform FindHome()
-    {
-        return home;
-    }
-
 }
