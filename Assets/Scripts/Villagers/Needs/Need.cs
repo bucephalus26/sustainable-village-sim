@@ -18,7 +18,18 @@ public abstract class Need
 
     public virtual void Decay(float deltaTime)
     {
+        float previousValue = CurrentValue;
         CurrentValue = Mathf.Max(0, CurrentValue - DecayRate * deltaTime);
+
+        if (!IsCritical(previousValue) && IsCritical(CurrentValue))
+        {
+            EventManager.Instance.TriggerEvent(new VillagerEvents.NeedBecameCriticalEvent
+            {
+               VillagerName = services.VillagerComponent.villagerName,
+               NeedType = Name,
+               CurrentValue = CurrentValue
+            });
+        }
     }
 
     public virtual void Fulfill(ResourceManager resourceManager)
@@ -26,13 +37,26 @@ public abstract class Need
         if (resourceManager.ConsumeResource(RequiredResource, ResourceAmountNeeded))
         {
             CurrentValue = 100f;
-            Debug.Log($"Villager {services.VillagerComponent.villagerName} ({services.ProfessionManager.GetProfessionType()}) fulfilled {RequiredResource} need. Need replenished.");
+            EventManager.Instance.TriggerEvent(new VillagerEvents.NeedFulfilledEvent
+            {
+                VillagerName = services.VillagerComponent.villagerName,
+                NeedType = Name,
+                NewValue = CurrentValue
+            });
         }
         else
         {
-            Debug.Log($"Villager {services.VillagerComponent.villagerName} ({services.ProfessionManager.GetProfessionType()}) tried to fulfill {RequiredResource} need but there weren't enough resources.");
+            EventManager.Instance.TriggerEvent(new VillagerEvents.NeedFulfillmentFailedEvent
+            {
+                VillagerName = services.VillagerComponent.villagerName,
+                NeedType = Name,
+                RequiredResource = RequiredResource,
+                AmountNeeded = ResourceAmountNeeded
+            });
         }
     }
 
     public virtual bool IsCritical() => CurrentValue <= CriticalThreshold;
+    private bool IsCritical(float value) => value <= CriticalThreshold;
+
 }

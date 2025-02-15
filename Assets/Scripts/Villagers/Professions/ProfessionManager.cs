@@ -5,6 +5,14 @@ public class ProfessionManager : MonoBehaviour
     private IProfession profession;
     private Villager villager;
 
+    void Update()
+    {
+        if (profession != null && profession.GetWorkingStatus())
+        {
+            profession.Work();
+        }
+    }
+
     public void Initialize(Villager villager)
     {
         this.villager = villager;
@@ -35,7 +43,6 @@ public class ProfessionManager : MonoBehaviour
         if (canWork)
         {
             currentProfession.StartWorking();
-            profession.Work();
         }
         else
         {

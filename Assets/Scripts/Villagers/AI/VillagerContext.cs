@@ -20,7 +20,12 @@ public class VillagerContext : MonoBehaviour
         currentState = newState;
         currentState.EnterState();
 
-        Debug.Log($"Villager {services.VillagerComponent.villagerName} ({services.ProfessionManager.GetProfessionType()}) transitioning to {newState.GetType().Name}.");
+        EventManager.Instance.TriggerEvent(new VillagerEvents.StateChangeEvent
+        {
+            VillagerName = services.VillagerComponent.villagerName,
+            ProfessionType = services.ProfessionManager.GetProfessionType().ToString(),
+            NewState = newState.GetType()
+        }); 
     }
 
     void Update()

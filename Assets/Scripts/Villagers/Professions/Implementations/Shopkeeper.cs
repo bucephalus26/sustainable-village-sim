@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class Shopkeeper : BaseProfession
 {
-    protected override void PerformWork()
+    protected override void DoWork()
     {
         resources.AddResource(ResourceType.CommunalWealth, data.wealthGeneration);
         villager.EarnWealth(data.wealthGeneration);

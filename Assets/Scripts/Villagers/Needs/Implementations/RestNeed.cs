@@ -15,6 +15,12 @@ public class RestNeed : Need
     public override void Fulfill(ResourceManager resourceManager)
     {
         CurrentValue = 100f; // Rest doesn't consume resources
-        Debug.Log($"Villager {services.VillagerComponent.villagerName} ({services.ProfessionManager.GetProfessionType()}) rested at home.");
+
+        EventManager.Instance.TriggerEvent(new VillagerEvents.NeedFulfilledEvent
+        {
+            VillagerName = services.VillagerComponent.villagerName,
+            NeedType = Name,
+            NewValue = CurrentValue
+        });
     }
 }

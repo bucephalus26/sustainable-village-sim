@@ -7,7 +7,7 @@ public abstract class BaseProfession : MonoBehaviour, IProfession
     protected ResourceManager resources;
 
     private float workTimer;
-    protected bool isWorking;
+    protected bool isWorking = false;
 
     public ProfessionType ProfessionType => data.type;
 
@@ -32,8 +32,22 @@ public abstract class BaseProfession : MonoBehaviour, IProfession
         }
     }
 
-    protected abstract void PerformWork();
+    protected virtual void PerformWork()
+    {
+        // Call the specific profession's work implementation
+        DoWork();
+
+        EventManager.Instance.TriggerEvent(new VillagerEvents.ProfessionWorkCompletedEvent
+        {
+            VillagerName = villager.villagerName,
+            ProfessionType = ProfessionType,
+            ResourcesProduced = data.resourceOutput
+        });
+    }
+
+    protected abstract void DoWork();
 
     public void StartWorking() => isWorking = true;
     public void StopWorking() => isWorking = false;
+    public bool GetWorkingStatus() => isWorking;
 }
