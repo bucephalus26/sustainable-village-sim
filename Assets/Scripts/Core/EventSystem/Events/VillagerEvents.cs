@@ -3,6 +3,14 @@ using System;
 
 public static class VillagerEvents
 {
+    public class VillagerInitializedEvent : IVillageEvent
+    {
+        public float Timestamp { get; private set; } = Time.time;
+        public string VillagerName { get; set; }
+        public ProfessionType ProfessionType { get; set; }
+        public GameObject VillagerObject { get; set; }
+    }
+
     public class StateChangeEvent : IVillageEvent
     {
         public float Timestamp { get; private set; } = Time.time;

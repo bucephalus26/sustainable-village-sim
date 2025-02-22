@@ -23,7 +23,7 @@ public class ResourceManager : MonoBehaviour
     private void InitializeResources()
     {
         resources[ResourceType.Food] = 100f;
-        resources[ResourceType.CommunalWealth] = 100f;
+        resources[ResourceType.Wealth] = 100f;
     }
 
     // Deducts resource when consumed

@@ -23,5 +23,12 @@ public class VillagerServices : MonoBehaviour
         ProfessionManager.AssignProfession(professionData);
 
         NeedsManager = new NeedsManager(this);
+
+        EventManager.Instance.TriggerEvent(new VillagerEvents.VillagerInitializedEvent
+        {
+            VillagerName = VillagerComponent.villagerName,
+            ProfessionType = ProfessionManager.GetProfessionType(),
+            VillagerObject = gameObject
+        });
     }
 }
