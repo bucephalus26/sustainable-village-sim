@@ -10,17 +10,16 @@ public class EventLogEntry : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     [SerializeField] private Image leftIndicator;
 
     [Header("Type Colors")]
-    [SerializeField] private Color normalTextColor = new Color(0.2f, 0.2f, 0.2f);
-    [SerializeField] private Color warningTextColor = new Color(0.2f, 0.1f, 0f);
+    [SerializeField] private Color normalTextColor = new(0.2f, 0.2f, 0.2f);
+    [SerializeField] private Color warningTextColor = new(0.2f, 0.1f, 0f);
     [SerializeField] private Color errorTextColor = Color.white;
 
-    [SerializeField] private Color normalBgColor = new Color(1f, 1f, 1f, 0f);
-    [SerializeField] private Color warningBgColor = new Color(1f, 0.5f, 0f, 0.5f);
-    [SerializeField] private Color errorBgColor = new Color(1f, 0.2f, 0.2f, 0.3f);
+    [SerializeField] private Color normalBgColor = new(1f, 1f, 1f, 0f);
+    [SerializeField] private Color warningBgColor = new(1f, 0.5f, 0f, 0.5f);
+    [SerializeField] private Color errorBgColor = new(1f, 0.2f, 0.2f, 0.3f);
 
-    [SerializeField] private Color indicatorWarningColor = new Color(1f, 0.5f, 0f, 1f);
-    [SerializeField] private Color indicatorErrorColor = new Color(1f, 0.2f, 0.2f, 1f);
-
+    [SerializeField] private Color indicatorWarningColor = new(1f, 0.5f, 0f, 1f);
+    [SerializeField] private Color indicatorErrorColor = new(1f, 0.2f, 0.2f, 1f);
 
     // Property for filtering
     public string MessageText => messageText ? messageText.text : string.Empty;
