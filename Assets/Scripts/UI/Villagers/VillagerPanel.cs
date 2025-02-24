@@ -15,8 +15,8 @@ public class VillagerPanel : UIPanel
     [SerializeField] private TMP_Text totalVillagersText;
     [SerializeField] private TMP_Dropdown sortDropdown;
 
-    private List<VillagerEntry> activeEntries = new List<VillagerEntry>();
-    private List<GameObject> instantiatedObjects = new List<GameObject>();
+    private List<VillagerEntry> activeEntries = new();
+    private List<GameObject> instantiatedObjects = new();
 
     public override void Initialize()
     {
@@ -133,7 +133,7 @@ public class VillagerPanel : UIPanel
 
     private void SortEntries(int sortIndex)
     {
-        List<VillagerEntry> sortedEntries = new List<VillagerEntry>(activeEntries);
+        List<VillagerEntry> sortedEntries = new(activeEntries);
 
         switch (sortIndex)
         {

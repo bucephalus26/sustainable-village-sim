@@ -10,6 +10,7 @@ public class UIManager : MonoBehaviour
     private static UIManager instance;
     public static UIManager Instance => instance;
 
+    [Header("References")]
     [SerializeField] private List<UIPanel> panels = new();
     private Dictionary<string, UIPanel> panelLookup = new();
 
