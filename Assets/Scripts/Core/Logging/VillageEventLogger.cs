@@ -65,7 +65,7 @@ public class VillageEventLogger : MonoBehaviour
 
     private void OnWealthChanged(VillagerEvents.WealthChangedEvent evt)
     {
-        Debug.Log($"[Wealth Change] {evt.VillagerName} earned {evt.Amount}. New total: {evt.NewTotal}");
+        Debug.Log($"[Wealth Change] {evt.VillagerName} earned {evt.Amount}. Total wealth: {evt.NewTotal}");
     }
 
     private void OnResourceChanged(ResourceEvents.ResourceChangeEvent evt)

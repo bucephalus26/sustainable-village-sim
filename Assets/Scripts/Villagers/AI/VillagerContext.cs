@@ -6,12 +6,21 @@ public class VillagerContext : MonoBehaviour
     private IVillagerState currentState;
     private VillagerServices services;
 
+    public IVillagerState CurrentState => currentState;
+
     public void Initialize(ProfessionData professionData)
     {
         services = gameObject.AddComponent<VillagerServices>();
         services.Initialize(professionData);
 
         TransitionTo(new WorkingState(this, services));
+
+        EventManager.Instance.TriggerEvent(new VillagerEvents.VillagerInitializedEvent
+        {
+            VillagerName = services.VillagerComponent.villagerName,
+            ProfessionType = services.ProfessionManager.GetProfessionType(),
+            VillagerObject = gameObject
+        });
     }
 
     public void TransitionTo(IVillagerState newState)

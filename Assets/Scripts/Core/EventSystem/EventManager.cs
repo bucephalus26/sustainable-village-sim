@@ -7,7 +7,7 @@ public class EventManager : MonoBehaviour
 {
     private static EventManager instance;
     public static EventManager Instance => instance ??= FindAnyObjectByType<EventManager>();
-    private Dictionary<Type, List<Action<IVillageEvent>>> eventListeners = new Dictionary<Type, List<Action<IVillageEvent>>>();
+    private Dictionary<Type, List<Action<IVillageEvent>>> eventListeners = new();
 
     private void Awake()
     {

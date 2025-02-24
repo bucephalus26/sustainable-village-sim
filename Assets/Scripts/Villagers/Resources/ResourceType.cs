@@ -4,5 +4,7 @@ public enum ResourceType
 {
     None,
     Food,
-    CommunalWealth
+    Wood,
+    Stone,
+    Wealth
 }
