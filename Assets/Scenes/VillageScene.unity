@@ -3303,7 +3303,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1979443291}
   m_Direction: 3
   m_Value: 0
-  m_Size: 0.9999999
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -3970,7 +3970,7 @@ MonoBehaviour:
   logEntryPrefab: {fileID: 2776116712968579713, guid: e4c6dfe699ed8ac4dbe22c9aa5e4ce8c, type: 3}
   filterField: {fileID: 0}
   categoryFilter: {fileID: 0}
-  scrollRect: {fileID: 0}
+  scrollRect: {fileID: 368693384}
   maxEntries: 100
 --- !u!1 &953567295
 GameObject:
@@ -4286,7 +4286,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 176592470}
   m_HandleRect: {fileID: 176592469}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
