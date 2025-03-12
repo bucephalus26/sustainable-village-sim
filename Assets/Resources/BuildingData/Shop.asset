@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 60582c0fc152fd845a17daf22227418b, type: 3}
+  m_Name: Shop
+  m_EditorClassIdentifier: 
+  buildingName: Village Store
+  type: 2
+  description: Trading center for the village.
+  maxOccupants: 8
+  maxWorkers: 2
+  maxResidents: 0
+  isWorkplace: 1
+  validProfessions: 01000000
+  producedResourceType: 0
+  productionInterval: 1.5
+  baseResourceProduction: 1
+  baseWealthProduction: 3
+  needsFulfilled: []

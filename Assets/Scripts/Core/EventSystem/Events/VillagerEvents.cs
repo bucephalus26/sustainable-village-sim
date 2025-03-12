@@ -11,6 +11,12 @@ public static class VillagerEvents
         public GameObject VillagerObject { get; set; }
     }
 
+    public class AllVillagersInitializedEvent : IVillageEvent
+    {
+        public float Timestamp { get; private set; } = Time.time;
+        public int VillagerCount { get; set; }
+    }
+
     public class StateChangeEvent : IVillageEvent
     {
         public float Timestamp { get; private set; } = Time.time;
@@ -19,20 +25,20 @@ public static class VillagerEvents
         public Type NewState { get; set; }
     }
 
-    public class NeedFulfilledEvent : IVillageEvent
-    {
-        public float Timestamp { get; private set; } = Time.time;
-        public string VillagerName { get; set; }
-        public string NeedType { get; set; }
-        public float NewValue { get; set; }
-    }
-
     public class NeedBecameCriticalEvent : IVillageEvent
     {
         public float Timestamp { get; private set; } = Time.time;
         public string VillagerName { get; set; }
         public string NeedType { get; set; }
         public float CurrentValue { get; set; }
+    }
+
+    public class NeedFulfilledEvent : IVillageEvent
+    {
+        public float Timestamp { get; private set; } = Time.time;
+        public string VillagerName { get; set; }
+        public string NeedType { get; set; }
+        public float NewValue { get; set; }
     }
 
     public class NeedFulfillmentFailedEvent : IVillageEvent
