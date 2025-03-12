@@ -10,7 +10,6 @@ public class Villager : MonoBehaviour
 
     [Header("Happiness")]
     [SerializeField]
-    [Range(0f, 100f)]
     public float happiness = 50f;
 
     [Header("Debug Info")]

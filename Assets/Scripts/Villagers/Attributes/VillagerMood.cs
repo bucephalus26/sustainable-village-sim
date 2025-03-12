@@ -5,6 +5,7 @@ public class VillagerMood : MonoBehaviour
 {
     [Header("Happiness Settings")]
     [SerializeField] [Range(0f, 100f)] private float happiness = 50f;
+    [SerializeField] private string currentMood;
     [SerializeField] private bool showMoodIndicator = true;
 
     [Header("Factor Weights")]
@@ -74,6 +75,8 @@ public class VillagerMood : MonoBehaviour
 
     private void CreateMoodIndicator()
     {
+        if (moodIndicator != null) return;
+
         // Small indicator above the villager
         GameObject indicatorObj = new("MoodIndicator");
         indicatorObj.transform.SetParent(transform);
@@ -88,13 +91,18 @@ public class VillagerMood : MonoBehaviour
         UpdateMoodIndicator();
     }
 
+    private void DestroyMoodIndicator()
+    {
+        if (moodIndicator != null)
+        {
+            Destroy(moodIndicator.gameObject);
+            moodIndicator = null;
+        }
+    }
+
+
     public void UpdateHappiness()
     {
-        updateTimer += Time.deltaTime * TimeManager.Instance.TimeScaleFactor;
-        if (updateTimer < updateInterval) return;
-
-        updateTimer = 0f;
-
         if (brain?.NeedsManager == null) return;
 
         // Calculate satisfaction factors
@@ -125,11 +133,20 @@ public class VillagerMood : MonoBehaviour
         // Gradually move toward target
         happiness = Mathf.Lerp(happiness, targetHappiness, Time.deltaTime * 0.1f);
 
+        currentMood = CurrentMood.ToString();
+
         // Update visual
-        if (moodIndicator != null)
+        if (showMoodIndicator)
         {
+            if (moodIndicator == null)
+                CreateMoodIndicator();
             UpdateMoodIndicator();
         }
+        else
+        {
+            DestroyMoodIndicator();
+        }
+
 
         // Update villager's happiness value
         villager.happiness = happiness;
