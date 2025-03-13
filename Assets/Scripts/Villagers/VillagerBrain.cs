@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 // Consolidates all dependencies
@@ -12,6 +14,8 @@ public class VillagerBrain : MonoBehaviour
     public INeedsManager NeedsManager { get; private set; }
     public VillagerPersonality Personality { get; private set; }
     public VillagerMood VillagerMood { get; private set; }
+    public VillagerGoals Goals { get; private set; }
+
 
     // State management
     private IVillagerState currentState;
@@ -56,7 +60,7 @@ public class VillagerBrain : MonoBehaviour
         {
             Personality = gameObject.AddComponent<VillagerPersonality>();
         }
-        Personality.InitializePersonality();
+        Personality.Initialize();
 
         VillagerMood = GetComponent<VillagerMood>();
         if (VillagerMood == null)
@@ -64,6 +68,13 @@ public class VillagerBrain : MonoBehaviour
             VillagerMood = gameObject.AddComponent<VillagerMood>();
         }
         VillagerMood.Initialize(villager, this);
+
+        Goals = GetComponent<VillagerGoals>();
+        if (Goals == null)
+        {
+            Goals = gameObject.AddComponent<VillagerGoals>();
+        }
+        Goals.Initialize(villager, this);
 
         // Assign profession
         Profession.AssignProfession(professionData);
@@ -187,7 +198,7 @@ public class VillagerBrain : MonoBehaviour
 
     public void DetermineNextAction()
     {
-        // Check for critical needs first
+        // Check for critical needs first - no change
         Need urgentNeed = NeedsManager.GetMostUrgentNeed();
         if (urgentNeed != null)
         {
@@ -198,52 +209,84 @@ public class VillagerBrain : MonoBehaviour
         // Get schedule-appropriate behavior if no urgent needs
         TimeOfDay currentTime = TimeManager.Instance.CurrentTimeOfDay;
 
+        // Very unhappy villagers make different choices - no change
         bool isVeryUnhappy = VillagerMood != null && VillagerMood.Happiness < 30f;
 
-        // Working hours - villager should work unless unhappy or personality dictates otherwise
-        if (Profession.IsWorkingHour())
+        // Create a map of candidate states and their base priority
+        Dictionary<System.Type, float> statePriorities = new Dictionary<System.Type, float>();
+
+        // Add time-appropriate states with base priorities
+        if (Profession.IsWorkingHour() && !isVeryUnhappy)
         {
-            if (VillagerMood != null && VillagerMood.ShouldSkipWork())
-            {
-                // Unhappy villager might socialize instead of work
-                if (Personality.sociability > 0.4f)
-                {
-                    TransitionTo(new SocializingState(this));
-                    return;
-                }
-                // Or just idle
-                TransitionTo(new IdleState(this));
-                return;
-            }
-            else if (UnityEngine.Random.value < Personality.workEthic)
-            {
-                TransitionTo(new WorkingState(this));
-                return;
-            }
+            statePriorities[typeof(WorkingState)] = Personality.workEthic * 10f;
         }
 
-        // Social hours - villager should socialize unless personality dictates otherwise
-        if (Profession.IsSocialHour())
+        if (Profession.IsSocialHour() || isVeryUnhappy)
         {
-            if (UnityEngine.Random.value < Personality.sociability)
-            {
-                TransitionTo(new SocializingState(this));
-                return;
-            }
+            statePriorities[typeof(SocializingState)] = Personality.sociability * 8f;
         }
 
-        // Rest hours - villager should rest
         if (Profession.IsRestingHour())
         {
-            TransitionTo(new SleepingState(this));
-            return;
+            statePriorities[typeof(SleepingState)] = 12f; // High base priority for sleep during rest hours
         }
 
-        // Default to idle if nothing else is appropriate
-        if (!(currentState is IdleState))
+        // Always include idle as a fallback
+        statePriorities[typeof(IdleState)] = 1f;
+
+        // Apply goal preferences - NEW
+        if (Goals != null)
         {
+            foreach (var stateEntry in statePriorities.Keys.ToList())
+            {
+                IVillagerState stateInstance = CreateStateInstance(stateEntry);
+                if (stateInstance != null)
+                {
+                    statePriorities[stateEntry] += Goals.GetGoalPreference(stateInstance);
+                }
+            }
+        }
+
+        // Choose the highest priority state
+        System.Type selectedStateType = null;
+        float highestPriority = 0f;
+
+        foreach (var stateEntry in statePriorities)
+        {
+            if (stateEntry.Value > highestPriority)
+            {
+                highestPriority = stateEntry.Value;
+                selectedStateType = stateEntry.Key;
+            }
+        }
+
+        // Transition to the selected state
+        if (selectedStateType != null)
+        {
+            IVillagerState newState = CreateStateInstance(selectedStateType);
+            if (newState != null)
+            {
+                TransitionTo(newState);
+            }
+        }
+        else
+        {
+            // Fallback to idle
             TransitionTo(new IdleState(this));
         }
     }
 
+    private IVillagerState CreateStateInstance(System.Type stateType)
+    {
+        if (stateType == typeof(WorkingState))
+            return new WorkingState(this);
+        if (stateType == typeof(SocializingState))
+            return new SocializingState(this);
+        if (stateType == typeof(SleepingState))
+            return new SleepingState(this);
+        if (stateType == typeof(IdleState))
+            return new IdleState(this);
+
+        return null;
+    }
 }

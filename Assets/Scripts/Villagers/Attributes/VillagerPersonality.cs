@@ -11,10 +11,9 @@ public class VillagerPersonality : MonoBehaviour
     [Range(0f, 1f)] public float optimism = 0.5f;       // Affects baseline happiness
 
     // Additional personality factors
-    [Header("Secondary Traits")]
-    [Range(0f, 1f)] public float religiosity = 0.5f;    // Affects church attendance
-    [Range(0f, 1f)] public float frugality = 0.5f;      // Affects spending/saving behavior
-    [Range(0f, 1f)] public float altruism = 0.5f;       // Affects willingness to help others
+    [Header("Goal-Related Traits")]
+    [Range(0f, 1f)] public float ambition = 0.5f;       // Affects number and difficulty of goals
+    [Range(0f, 1f)] public float altruism = 0.5f;       // Affects preference for village-helping goals
 
     private Villager villager;
 
@@ -24,7 +23,7 @@ public class VillagerPersonality : MonoBehaviour
     }
 
     // Initialize with random traits
-    public void InitializePersonality(bool randomize = true)
+    public void Initialize(bool randomize = true)
     {
         if (randomize)
         {
@@ -35,9 +34,8 @@ public class VillagerPersonality : MonoBehaviour
             impulsivity = Random.Range(0.1f, 0.7f);
             optimism = Random.Range(0.3f, 0.8f);
 
-            // Secondary traits
-            religiosity = Random.Range(0.2f, 0.9f);
-            frugality = Random.Range(0.3f, 0.9f);
+            // Goal traits
+            ambition = Random.Range(0.2f, 0.9f);
             altruism = Random.Range(0.2f, 0.8f);
         }
 
@@ -45,14 +43,7 @@ public class VillagerPersonality : MonoBehaviour
         Debug.Log($"{GetComponent<Villager>()?.villagerName} personality: " +
                   $"Sociability={sociability:F2}, WorkEthic={workEthic:F2}, " +
                   $"Resilience={resilience:F2}, Impulsivity={impulsivity:F2}, " +
-                  $"Optimism={optimism:F2}");
-    }
-
-    // Methods to influence state decisions based on personality
-    public bool WillSkipWork()
-    {
-        // Higher work ethic and resilience makes skipping work less likely
-        return Random.value > (workEthic * resilience);
+                  $"Optimism={optimism:F2}, Ambition={ambition:F2}, Altruism={altruism:F2}");
     }
 
     public float GetNeedDecayMultiplier(Need need)
@@ -76,24 +67,6 @@ public class VillagerPersonality : MonoBehaviour
         }
     }
 
-    // Get desire to attend church based on religiosity
-    public float GetChurchDesire()
-    {
-        return religiosity * 2.0f; // Double influence for religious activities
-    }
-
-    // Get chance of helping another villager based on altruism
-    public float GetHelpingChance()
-    {
-        return altruism;
-    }
-
-    // Get tendency to save or spend resources based on frugality
-    public float GetSavingTendency()
-    {
-        return frugality;
-    }
-
     // Get a blended personality trait for specific decisions
     public float GetTraitBlend(float primaryTrait, float secondaryTrait, float primaryWeight = 0.7f)
     {
@@ -108,8 +81,7 @@ public class VillagerPersonality : MonoBehaviour
                $"Work Ethic: {GetTraitDescription(workEthic)}\n" +
                $"Resilience: {GetTraitDescription(resilience)}\n" +
                $"Impulsivity: {GetTraitDescription(impulsivity)}\n" +
-               $"Religiosity: {GetTraitDescription(religiosity)}\n" +
-               $"Frugality: {GetTraitDescription(frugality)}\n" +
+               $"Ambition: {GetTraitDescription(ambition)}\n" +
                $"Altruism: {GetTraitDescription(altruism)}";
     }
 

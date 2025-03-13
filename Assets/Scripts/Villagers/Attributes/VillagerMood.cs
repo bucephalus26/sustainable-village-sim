@@ -12,6 +12,11 @@ public class VillagerMood : MonoBehaviour
     [SerializeField] [Range(0f, 2f)] private float needsWeight = 1.0f;
     [SerializeField] [Range(0f, 2f)] private float wealthWeight = 0.3f;
     [SerializeField] [Range(0f, 2f)] private float workWeight = 0.5f;
+    [SerializeField] [Range(0f, 2f)] private float goalWeight = 0.7f;
+
+    [Header("Temporary Boosts")]
+    [SerializeField] private float temporaryBoost = 0f;
+    [SerializeField] private float boostRemainingTime = 0f;
 
     [Header("Indicator Settings")]
     [SerializeField] private float indicatorSize = 3.5f;
@@ -110,13 +115,29 @@ public class VillagerMood : MonoBehaviour
         wealthSatisfaction = CalculateWealthSatisfaction();
         workSatisfaction = CalculateWorkSatisfaction();
 
+        // Goal progress satisfaction
+        float goalSatisfaction = CalculateGoalSatisfaction();
+
         // Calculate weighted contribution
-        float totalWeight = needsWeight + wealthWeight + workWeight;
+        float totalWeight = needsWeight + wealthWeight + workWeight + goalWeight; // Add goalWeight
         float weightedSatisfaction = (
             needsSatisfaction * needsWeight +
             wealthSatisfaction * wealthWeight +
-            workSatisfaction * workWeight
+            workSatisfaction * workWeight +
+            goalSatisfaction * goalWeight // Add goal contribution
         ) / totalWeight;
+
+        // Apply temporary boosts
+        if (boostRemainingTime > 0)
+        {
+            boostRemainingTime -= Time.deltaTime;
+            weightedSatisfaction += temporaryBoost;
+
+            if (boostRemainingTime <= 0)
+            {
+                temporaryBoost = 0f;
+            }
+        }
 
         // Personality modifier
         float personalityModifier = 0f;
@@ -152,25 +173,7 @@ public class VillagerMood : MonoBehaviour
         villager.happiness = happiness;
     }
 
-    // Work efficiency multiplier for profession system
-    public float GetWorkEfficiencyMultiplier()
-    {
-        return Mathf.Lerp(0.5f, 1.5f, happiness / 100f);
-    }
-
-    // Social interaction quality for future social system
-    public float GetSocialInteractionQuality()
-    {
-        return Mathf.Lerp(0.7f, 1.3f, happiness / 100f);
-    }
-
-    // Influence on decision making for VillagerBrain
-    public bool ShouldSkipWork()
-    {
-        // Unhappy villagers more likely to skip work
-        return happiness < 30f && Random.value < 0.5f;
-    }
-
+    // Calculate satisfaction affecting overall happiness
     private float CalculateNeedsSatisfaction()
     {
         float sum = 0f;
@@ -218,6 +221,48 @@ public class VillagerMood : MonoBehaviour
         return Mathf.Clamp(baseValue, 0f, 100f);
     }
 
+    private float CalculateGoalSatisfaction()
+    {
+        VillagerGoals goals = GetComponent<VillagerGoals>();
+        if (goals == null) return 50f; // Neutral if no goals component
+
+        // Get all active goals
+        var activeGoals = goals.GetActiveGoals();
+        if (activeGoals.Count == 0) return 50f; // Neutral if no active goals
+
+        // Calculate average progress
+        float totalProgress = 0f;
+        foreach (var goal in activeGoals)
+        {
+            totalProgress += goal.ProgressPercentage;
+        }
+
+        // Return average progress as satisfaction level
+        return totalProgress / activeGoals.Count;
+    }
+
+    // Add this method to handle happiness boosts from completing goals
+    public void AddHappinessBoost(float boostAmount, float durationSeconds)
+    {
+        temporaryBoost = boostAmount;
+        boostRemainingTime = durationSeconds;
+
+        Debug.Log($"{villager.villagerName} got a happiness boost of {boostAmount} for {durationSeconds} seconds");
+    }
+
+
+    // Work efficiency multiplier for profession system
+    public float GetWorkEfficiencyMultiplier()
+    {
+        return Mathf.Lerp(0.5f, 1.5f, happiness / 100f);
+    }
+
+    // Social interaction quality for future social system
+    public float GetSocialInteractionQuality()
+    {
+        return Mathf.Lerp(0.7f, 1.3f, happiness / 100f);
+    }
+
     private void UpdateMoodIndicator()
     {
         if (moodIndicator == null) return;
@@ -241,7 +286,7 @@ public class VillagerMood : MonoBehaviour
     {
         // Create a simple dot texture
         int resolution = 32;
-        Texture2D texture = new Texture2D(resolution, resolution);
+        Texture2D texture = new(resolution, resolution);
 
         float centerX = resolution / 2;
         float centerY = resolution / 2;
