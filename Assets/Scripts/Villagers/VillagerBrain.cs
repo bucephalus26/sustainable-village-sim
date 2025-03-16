@@ -213,7 +213,7 @@ public class VillagerBrain : MonoBehaviour
         bool isVeryUnhappy = VillagerMood != null && VillagerMood.Happiness < 30f;
 
         // Create a map of candidate states and their base priority
-        Dictionary<System.Type, float> statePriorities = new Dictionary<System.Type, float>();
+        Dictionary<System.Type, float> statePriorities = new();
 
         // Add time-appropriate states with base priorities
         if (Profession.IsWorkingHour() && !isVeryUnhappy)

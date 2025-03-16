@@ -21,16 +21,6 @@ public class TimeManager : MonoBehaviour
     public int CurrentDay => currentDay;
     public TimeOfDay CurrentTimeOfDay => currentTimeOfDay;
 
-    // Time blocks in hours
-    private readonly Dictionary<TimeOfDay, Vector2> timeBlocks = new()
-    {
-        { TimeOfDay.Morning, new Vector2(6, 11) },    // 6:00 AM - 11:59 AM
-        { TimeOfDay.Noon, new Vector2(12, 13) },      // 12:00 PM - 1:59 PM
-        { TimeOfDay.Afternoon, new Vector2(14, 17) }, // 2:00 PM - 5:59 PM
-        { TimeOfDay.Evening, new Vector2(18, 21) },   // 6:00 PM - 9:59 PM
-        { TimeOfDay.Night, new Vector2(22, 5) }       // 10:00 PM - 5:59 AM
-    };
-
     private void Awake()
     {
         if (Instance == null)
@@ -51,7 +41,6 @@ public class TimeManager : MonoBehaviour
         // Broadcast initial time state
         BroadcastTimeChange();
     }
-
 
     private void Update()
     {
@@ -85,32 +74,21 @@ public class TimeManager : MonoBehaviour
     {
         float hour = currentTimeInHours;
 
-        foreach (var block in timeBlocks)
-        {
-            Vector2 range = block.Value;
-
-            // Handle special case for Night which wraps around from 22-5
-            if (block.Key == TimeOfDay.Night)
-            {
-                if (hour >= range.x || hour < range.y)
-                {
-                    return block.Key;
-                }
-            }
-            // Normal case for other time blocks
-            else if (hour >= range.x && hour < range.y)
-            {
-                return block.Key;
-            }
-        }
-
-        // Default fallback
-        return TimeOfDay.Morning;
+        if (hour >= 22 || hour < 6)
+            return TimeOfDay.Night;
+        else if (hour >= 6 && hour < 12)
+            return TimeOfDay.Morning;
+        else if (hour >= 12 && hour < 14)
+            return TimeOfDay.Noon;
+        else if (hour >= 14 && hour < 18)
+            return TimeOfDay.Afternoon;
+        else // 18-22
+            return TimeOfDay.Evening;
     }
 
     private void BroadcastTimeChange()
     {
-        // Notify all interested systems about time change
+        // Notify all systems about time change
         EventManager.Instance.TriggerEvent(new TimeEvents.TimeOfDayChangedEvent
         {
             NewTimeOfDay = currentTimeOfDay,
