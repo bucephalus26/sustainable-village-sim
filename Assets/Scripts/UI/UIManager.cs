@@ -1,82 +1,89 @@
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+using System;
 
-
-/// <summary>
-/// Centralised manager for all UI panels
-/// </summary>
 public class UIManager : MonoBehaviour
 {
-    private static UIManager instance;
-    public static UIManager Instance => instance;
+    // Singleton pattern
+    public static UIManager Instance { get; private set; }
 
-    [Header("References")]
-    [SerializeField] private List<UIPanel> panels = new();
-    private Dictionary<string, UIPanel> panelLookup = new();
+    [Header("UI Components")]
+    [SerializeField] private TimeControlPanel timeControlPanel;
+
+    [Header("Panel References")]
+    [SerializeField] private GameObject leftPanel;
+    [SerializeField] private GameObject mainDashboard;
+    // We'll add references to other panels later
 
     private void Awake()
     {
-        if (instance != null && instance != this)
+        // Singleton setup
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
         {
             Destroy(gameObject);
-            return;
-        }
-        instance = this;
-
-        // register all panels
-        foreach (var panel in panels)
-        {
-            if (panel != null)
-            {
-                panelLookup[panel.PanelID] = panel;
-                panel.Initialize();
-            }
         }
     }
 
-    public T GetPanel<T>(string panelID) where T: UIPanel
+    private void Start()
     {
-        if (panelLookup.TryGetValue(panelID, out UIPanel panel))
+        // Subscribe to important events
+        if (EventManager.Instance != null)
         {
-            return panel as T;
-        }
-        return null;
-    }
-
-    public void ShowPanel(string panelID)
-    {
-        if (panelLookup.TryGetValue(panelID, out UIPanel panel))
-        {
-            panel.Show();
+            EventManager.Instance.AddListener<TimeEvents.TimeOfDayChangedEvent>(OnTimeOfDayChanged);
         }
         else
         {
-            Debug.LogWarning($"Panel with ID '{panelID}' not found");
+            Debug.LogWarning("EventManager instance not found");
         }
     }
 
-    public void HidePanel(string panelID)
+    private void OnDestroy()
     {
-        if (panelLookup.TryGetValue(panelID, out UIPanel panel))
+        // Unsubscribe from events
+        if (EventManager.Instance != null)
         {
-            panel.Hide();
-        }
-        else
-        {
-            Debug.LogWarning($"Panel with ID '{panelID}' not found");
+            EventManager.Instance.RemoveListener<TimeEvents.TimeOfDayChangedEvent>(OnTimeOfDayChanged);
         }
     }
 
-    public void TogglePanel(string panelID)
+    private void OnTimeOfDayChanged(TimeEvents.TimeOfDayChangedEvent evt)
     {
-        if (panelLookup.TryGetValue(panelID, out UIPanel panel))
+        // Update UI components when time changes
+        if (timeControlPanel != null)
         {
-            panel.Toggle();
-        }
-        else
-        {
-            Debug.LogWarning($"Panel with ID '{panelID}' not found");
+            timeControlPanel.UpdateTimeDisplay();
         }
     }
 
+    // Show/hide time control panel
+    public void ToggleTimeControlPanel(bool show)
+    {
+        if (timeControlPanel != null)
+        {
+            timeControlPanel.gameObject.SetActive(show);
+        }
+    }
+
+    // Show/hide main panels
+    public void ToggleLeftPanel(bool show)
+    {
+        if (leftPanel != null)
+        {
+            leftPanel.SetActive(show);
+        }
+    }
+
+    public void ToggleMainDashboard(bool show)
+    {
+        if (mainDashboard != null)
+        {
+            mainDashboard.SetActive(show);
+        }
+    }
 }

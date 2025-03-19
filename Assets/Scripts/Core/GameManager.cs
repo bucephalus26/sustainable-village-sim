@@ -130,6 +130,11 @@ public class GameManager : MonoBehaviour
         Debug.Log(pauseSimulation ? "Simulation paused" : "Simulation resumed");
     }
 
+    public float GetSimulationSpeed()
+    {
+        return simulationSpeed;
+    }
+
     // Methods for checking global simulation settings
     public bool IsWeatherEnabled() => enableWeather;
     public bool IsDiseaseEnabled() => enableDisease;

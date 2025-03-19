@@ -4,21 +4,18 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-public class SimulationStatistics : MonoBehaviour
+public partial class SimulationStatistics : MonoBehaviour
 {
     [Header("UI References")]
     [SerializeField] public GameObject statsPanel;
-    [SerializeField] private TextMeshProUGUI timeDisplay;
-    [SerializeField] private TextMeshProUGUI dayDisplay;
-    [SerializeField] private TextMeshProUGUI resourcesDisplay;
-    [SerializeField] private TextMeshProUGUI villagerStatsDisplay;
-    [SerializeField] private TextMeshProUGUI stateStatsDisplay;
-    [SerializeField] private TextMeshProUGUI moodStatsDisplay;
-    [SerializeField] private TextMeshProUGUI goalStatsDisplay;
-    [SerializeField] private Button toggleStatsButton;
-    [SerializeField] private Toggle showDetailedStats;
-
-    public Toggle ShowDetailedStats => showDetailedStats;
+    [SerializeField] public TextMeshProUGUI timeDisplay;
+    [SerializeField] public TextMeshProUGUI dayDisplay;
+    [SerializeField] public TextMeshProUGUI resourcesDisplay;
+    [SerializeField] public TextMeshProUGUI villagerStatsDisplay;
+    [SerializeField] public TextMeshProUGUI stateStatsDisplay;
+    [SerializeField] public TextMeshProUGUI moodStatsDisplay;
+    [SerializeField] public TextMeshProUGUI goalStatsDisplay;
+    [SerializeField] public Toggle showDetailedStats;
 
     // Tracking statistics
     private Dictionary<System.Type, int> villagerStateStats = new();
@@ -27,9 +24,9 @@ public class SimulationStatistics : MonoBehaviour
     private Dictionary<GoalType, int> activeGoalStats = new();
     private Dictionary<GoalType, int> completedGoalStats = new();
 
-    // Happiness tracking
-    private int villagerCount = 0;
+    // Mood tracking
     private float totalHappiness = 0f;
+    private int villagerCount = 0;
     private float averageHappiness = 50f;
     private float minHappiness = 100f;
     private float maxHappiness = 0f;
@@ -54,23 +51,10 @@ public class SimulationStatistics : MonoBehaviour
             showDetailedStats.onValueChanged.AddListener(OnToggleDetailedStats);
         }
 
-        if (toggleStatsButton != null)
-        {
-            toggleStatsButton.onClick.AddListener(ToggleStatsPanel);
-        }
-
-        if (statsPanel != null)
-        {
-            statsPanel.SetActive(true);
-        }
-
         // Subscribe to events
         EventManager.Instance.AddListener<VillagerEvents.StateChangeEvent>(OnVillagerStateChange);
         EventManager.Instance.AddListener<VillagerEvents.VillagerInitializedEvent>(OnVillagerInitialized);
         EventManager.Instance.AddListener<VillagerEvents.MoodChangedEvent>(OnVillagerMoodChanged);
-
-        // Initilize villager moods
-        InitializeVillagerMoods();
 
         // Initialize goal stats
         foreach (GoalType type in System.Enum.GetValues(typeof(GoalType)))
@@ -78,6 +62,9 @@ public class SimulationStatistics : MonoBehaviour
             activeGoalStats[type] = 0;
             completedGoalStats[type] = 0;
         }
+
+        // Initialize villager moods
+        InitializeVillagerMoods();
     }
 
     private void OnDestroy()
@@ -88,16 +75,6 @@ public class SimulationStatistics : MonoBehaviour
             EventManager.Instance.RemoveListener<VillagerEvents.StateChangeEvent>(OnVillagerStateChange);
             EventManager.Instance.RemoveListener<VillagerEvents.VillagerInitializedEvent>(OnVillagerInitialized);
             EventManager.Instance.RemoveListener<VillagerEvents.MoodChangedEvent>(OnVillagerMoodChanged);
-        }
-
-        if (showDetailedStats != null)
-        {
-            showDetailedStats.onValueChanged.RemoveListener(OnToggleDetailedStats);
-        }
-
-        if (toggleStatsButton != null)
-        {
-            toggleStatsButton.onClick.RemoveListener(ToggleStatsPanel);
         }
     }
 
@@ -122,6 +99,43 @@ public class SimulationStatistics : MonoBehaviour
         }
     }
 
+    private void InitializeVillagerMoods()
+    {
+        if (VillagerManager.Instance == null) return;
+
+        var villagers = VillagerManager.Instance.GetVillagers();
+        villagerCount = villagers.Count;
+
+        // Reset counters
+        moodCounts[VillagerMood.MoodState.Happy] = 0;
+        moodCounts[VillagerMood.MoodState.Content] = 0;
+        moodCounts[VillagerMood.MoodState.Unhappy] = 0;
+        totalHappiness = 0f;
+
+        // Initialize mood tracking
+        foreach (var villager in villagers)
+        {
+            var moodComponent = villager.GetComponent<VillagerMood>();
+            if (moodComponent != null)
+            {
+                float happiness = moodComponent.Happiness;
+                totalHappiness += happiness;
+
+                // Track min/max happiness
+                UpdateHappinessExtremes(villager.villagerName, happiness);
+
+                // Count mood categories
+                moodCounts[moodComponent.CurrentMood]++;
+            }
+        }
+
+        // Calculate average
+        if (villagerCount > 0)
+        {
+            averageHappiness = totalHappiness / villagerCount;
+        }
+    }
+
     private void UpdateStats()
     {
         if (!statsPanel.activeSelf) return;
@@ -135,7 +149,7 @@ public class SimulationStatistics : MonoBehaviour
         // Update state distribution
         UpdateStateDistribution();
 
-        // Update moods stats
+        // Update mood stats
         UpdateMoodDisplay();
 
         // Update goal stats
@@ -147,10 +161,10 @@ public class SimulationStatistics : MonoBehaviour
         if (resourcesDisplay == null || EconomyManager.Instance == null) return;
 
         string resourceText = "Resources:\n";
-        resourceText += $"Food: {EconomyManager.Instance.GetResourceAmount(ResourceType.Food):F1} (£{EconomyManager.Instance.GetResourcePrice(ResourceType.Food):F2})\n";
-        resourceText += $"Goods: {EconomyManager.Instance.GetResourceAmount(ResourceType.Goods):F1} (£{EconomyManager.Instance.GetResourcePrice(ResourceType.Goods):F2})\n";
+        resourceText += $"Food: {EconomyManager.Instance.GetResourceAmount(ResourceType.Food):F1} (${EconomyManager.Instance.GetResourcePrice(ResourceType.Food):F2})\n";
+        resourceText += $"Goods: {EconomyManager.Instance.GetResourceAmount(ResourceType.Goods):F1} (${EconomyManager.Instance.GetResourcePrice(ResourceType.Goods):F2})\n";
         resourceText += $"Wealth: {EconomyManager.Instance.GetResourceAmount(ResourceType.Wealth):F1}\n";
-        resourceText += $"Stone: {EconomyManager.Instance.GetResourceAmount(ResourceType.Stone):F1} (£{EconomyManager.Instance.GetResourcePrice(ResourceType.Stone):F2})";
+        resourceText += $"Stone: {EconomyManager.Instance.GetResourceAmount(ResourceType.Stone):F1} (${EconomyManager.Instance.GetResourcePrice(ResourceType.Stone):F2})";
 
         resourcesDisplay.text = resourceText;
     }
@@ -214,16 +228,6 @@ public class SimulationStatistics : MonoBehaviour
             villagerText += $"{prof.Key}: {prof.Value}\n";
         }
 
-        // Add need stats if detailed view is on
-        if (showDetailedStats != null && showDetailedStats.isOn)
-        {
-            villagerText += "\nAverage Needs:\n";
-            foreach (var need in averageNeedValues)
-            {
-                villagerText += $"{need.Key.Name}: {need.Value:F1}\n";
-            }
-        }
-
         villagerStatsDisplay.text = villagerText;
     }
 
@@ -247,6 +251,8 @@ public class SimulationStatistics : MonoBehaviour
     {
         if (moodStatsDisplay == null || VillagerManager.Instance == null) return;
 
+        // We'll only recalculate the total happiness and average
+        // since the mood counts are maintained by the event system
         var villagers = VillagerManager.Instance.GetVillagers();
 
         // Reset total
@@ -264,21 +270,14 @@ public class SimulationStatistics : MonoBehaviour
             averageHappiness = totalHappiness / villagers.Count;
         }
 
-        // Build display text
-        string happinessText = "Happiness:\n";
-        happinessText += $"Average: {averageHappiness:F1}\n";
-        happinessText += $"Happy: {moodCounts[VillagerMood.MoodState.Happy]} villagers\n";
-        happinessText += $"Content: {moodCounts[VillagerMood.MoodState.Content]} villagers\n";
-        happinessText += $"Unhappy: {moodCounts[VillagerMood.MoodState.Unhappy]} villagers\n";
+        // Build the display text
+        string moodText = "Happiness:\n";
+        moodText += $"Average: {averageHappiness:F1}\n";
+        moodText += $"Happy: {moodCounts[VillagerMood.MoodState.Happy]} villagers\n";
+        moodText += $"Content: {moodCounts[VillagerMood.MoodState.Content]} villagers\n";
+        moodText += $"Unhappy: {moodCounts[VillagerMood.MoodState.Unhappy]} villagers\n";
 
-        // Add detailed stats if enabled
-        if (showDetailedStats != null && showDetailedStats.isOn)
-        {
-            happinessText += $"\nHappiest: {happyVillager} ({maxHappiness:F1})\n";
-            happinessText += $"Unhappiest: {unhappyVillager} ({minHappiness:F1})\n";
-        }
-
-        moodStatsDisplay.text = happinessText;
+        moodStatsDisplay.text = moodText;
     }
 
     private void UpdateGoalsDisplay()
@@ -330,7 +329,7 @@ public class SimulationStatistics : MonoBehaviour
 
         // Build the display text
         string goalText = "Goals:\n";
-        goalText += $"Active Goals: {totalActiveGoals}\n";
+        goalText += $"Active Goals: {totalActiveGoals}\n\n";
 
         goalText += "Active Goal Types:\n";
         foreach (var entry in activeGoalStats.OrderByDescending(x => x.Value))
@@ -349,73 +348,43 @@ public class SimulationStatistics : MonoBehaviour
             }
         }
 
-        // Add completed goals if detailed view is on
-        if (showDetailedStats != null && showDetailedStats.isOn && completedGoalStats.Values.Sum() > 0)
+        goalStatsDisplay.text = goalText;
+    }
+
+    private void OnToggleDetailedStats(bool isOn)
+    {
+        // Update immediately with the new settings
+        UpdateStats();
+    }
+
+    private void OnVillagerStateChange(VillagerEvents.StateChangeEvent evt)
+    {
+        // This helps us track state distribution
+        var newStateType = evt.NewState;
+
+        // Ensure all state types are tracked
+        if (!villagerStateStats.ContainsKey(newStateType))
         {
-            goalText += "\nCompleted Goals:\n";
-            foreach (var entry in completedGoalStats.OrderByDescending(x => x.Value))
+            villagerStateStats[newStateType] = 0;
+        }
+
+        // Find and decrement the old state count if possible
+        foreach (var stateType in villagerStateStats.Keys.ToList())
+        {
+            if (stateType != newStateType)
             {
-                if (entry.Value > 0)
+                // We don't know which is the old state, so we take a conservative approach
+                // of only decrementing if the state count is positive
+                if (villagerStateStats[stateType] > 0)
                 {
-                    goalText += $"{entry.Key}: {entry.Value}\n";
+                    villagerStateStats[stateType]--;
+                    break; // Only decrement one state
                 }
             }
         }
 
-        goalStatsDisplay.text = goalText;
-    }
-
-    private void InitializeVillagerMoods()
-    {
-        if (VillagerManager.Instance == null) return;
-
-        var villagers = VillagerManager.Instance.GetVillagers();
-        villagerCount = villagers.Count;
-
-        // Reset counters
-        moodCounts[VillagerMood.MoodState.Happy] = 0;
-        moodCounts[VillagerMood.MoodState.Content] = 0;
-        moodCounts[VillagerMood.MoodState.Unhappy] = 0;
-        totalHappiness = 0f;
-
-        // Initialize mood tracking
-        foreach (var villager in villagers)
-        {
-            var moodComponent = villager.GetComponent<VillagerMood>();
-            if (moodComponent != null)
-            {
-                float happiness = moodComponent.Happiness;
-                totalHappiness += happiness;
-
-                // Track min/max happiness
-                UpdateHappinessExtremes(villager.villagerName, happiness);
-
-                // Count mood categories
-                moodCounts[moodComponent.CurrentMood]++;
-            }
-        }
-
-        // Calculate average
-        if (villagerCount > 0)
-        {
-            averageHappiness = totalHappiness / villagerCount;
-        }
-    }
-
-    private void UpdateHappinessExtremes(string villagerName, float happiness)
-    {
-        // Track happiness stats
-        if (happiness > maxHappiness)
-        {
-            maxHappiness = happiness;
-            happyVillager = villagerName;
-        }
-
-        if (happiness < minHappiness)
-        {
-            minHappiness = happiness;
-            unhappyVillager = villagerName;
-        }
+        // Increment the new state
+        villagerStateStats[newStateType]++;
     }
 
     private void OnVillagerInitialized(VillagerEvents.VillagerInitializedEvent evt)
@@ -456,40 +425,20 @@ public class SimulationStatistics : MonoBehaviour
         UpdateHappinessExtremes(evt.VillagerName, evt.HappinessValue);
     }
 
-    private void OnVillagerStateChange(VillagerEvents.StateChangeEvent evt)
+    private void UpdateHappinessExtremes(string villagerName, float happiness)
     {
-        // This helps us track state distribution
-        var newStateType = evt.NewState;
-
-        // Ensure all state types are tracked
-        if (!villagerStateStats.ContainsKey(newStateType))
+        // Track happiness stats
+        if (happiness > maxHappiness)
         {
-            villagerStateStats[newStateType] = 0;
+            maxHappiness = happiness;
+            happyVillager = villagerName;
         }
 
-        // Find and decrement the old state count if possible
-        foreach (var stateType in villagerStateStats.Keys.ToList())
+        if (happiness < minHappiness)
         {
-            if (stateType != newStateType)
-            {
-                // We don't know which is the old state, so we take a conservative approach
-                // of only decrementing if the state count is positive
-                if (villagerStateStats[stateType] > 0)
-                {
-                    villagerStateStats[stateType]--;
-                    break; // Only decrement one state
-                }
-            }
+            minHappiness = happiness;
+            unhappyVillager = villagerName;
         }
-
-        // Increment the new state
-        villagerStateStats[newStateType]++;
-    }
-
-    private void OnToggleDetailedStats(bool isOn)
-    {
-        // Update immediately with the new settings
-        UpdateStats();
     }
 
     public void RecordGoalCompletion(GoalType goalType)
