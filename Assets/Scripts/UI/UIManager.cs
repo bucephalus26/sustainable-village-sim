@@ -8,13 +8,10 @@ public class UIManager : MonoBehaviour
     // Singleton pattern
     public static UIManager Instance { get; private set; }
 
-    [Header("UI Components")]
-    [SerializeField] private TimeControlPanel timeControlPanel;
-
     [Header("Panel References")]
-    [SerializeField] private GameObject leftPanel;
+    [SerializeField] private TimeControlPanel timeControlPanel;
+    [SerializeField] private VillageInformationPanel villageInformationPanel;
     [SerializeField] private GameObject mainDashboard;
-    // We'll add references to other panels later
 
     private void Awake()
     {
@@ -70,12 +67,26 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    // Show/hide main panels
-    public void ToggleLeftPanel(bool show)
+    public void ToggleVillageInformationPanel(bool show)
     {
-        if (leftPanel != null)
+        if (villageInformationPanel != null)
         {
-            leftPanel.SetActive(show);
+            villageInformationPanel.gameObject.SetActive(show);
+        }
+    }
+
+    public void CollapseLeftPanel(bool collapse)
+    {
+        if (villageInformationPanel != null)
+        {
+            if (collapse && !villageInformationPanel.IsCollapsed)
+            {
+                villageInformationPanel.TogglePanel();
+            }
+            else if (!collapse && villageInformationPanel.IsCollapsed)
+            {
+                villageInformationPanel.TogglePanel();
+            }
         }
     }
 
