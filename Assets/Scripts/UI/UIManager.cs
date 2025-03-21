@@ -67,34 +67,26 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    public void ToggleVillageInformationPanel(bool show)
-    {
-        if (villageInformationPanel != null)
-        {
-            villageInformationPanel.gameObject.SetActive(show);
-        }
-    }
-
-    public void CollapseLeftPanel(bool collapse)
-    {
-        if (villageInformationPanel != null)
-        {
-            if (collapse && !villageInformationPanel.IsCollapsed)
-            {
-                villageInformationPanel.TogglePanel();
-            }
-            else if (!collapse && villageInformationPanel.IsCollapsed)
-            {
-                villageInformationPanel.TogglePanel();
-            }
-        }
-    }
-
-    public void ToggleMainDashboard(bool show)
+    public void ShowMainDashboard()
     {
         if (mainDashboard != null)
         {
-            mainDashboard.SetActive(show);
+            mainDashboard.SetActive(true);
         }
     }
+
+    public GameObject GetDashboard()
+    {
+        return mainDashboard;
+    }
+
+    // Method to close the dashboard
+    public void CloseDashboard()
+    {
+        if (mainDashboard != null)
+        {
+            mainDashboard.SetActive(false);
+        }
+    }
+
 }
