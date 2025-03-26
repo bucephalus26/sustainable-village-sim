@@ -17,7 +17,7 @@ MonoBehaviour:
   description: Grows food for the village through hard work in the fields.
   workInterval: 3
   primaryResourceType: 1
-  resourceOutput: 2
+  resourceOutput: 4
   wealthGeneration: 1
   workingHours: 0000000002000000
   socialHours: 03000000

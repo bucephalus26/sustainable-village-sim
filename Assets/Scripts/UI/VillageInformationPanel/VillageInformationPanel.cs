@@ -41,9 +41,9 @@ public class VillageInformationPanel : MonoBehaviour
     private TabType activeTab = TabType.Resources;
 
     // Colors for tab states
-    private Color tabActiveColor = new Color(0.2f, 0.6f, 0.9f, 0.4f);
-    private Color tabHoverColor = new Color(1f, 1f, 1f, 0.1f);
-    private Color tabNormalColor = new Color(0f, 0f, 0f, 0f);
+    private Color tabActiveColor = new(0.2f, 0.6f, 0.9f, 0.4f);
+    private Color tabHoverColor = new(1f, 1f, 1f, 0.1f);
+    private Color tabNormalColor = new(0f, 0f, 0f, 0f);
 
     private void Start()
     {

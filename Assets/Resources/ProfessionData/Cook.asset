@@ -17,7 +17,7 @@ MonoBehaviour:
   description: Prepares food for villagers at the restaurant.
   workInterval: 2
   primaryResourceType: 1
-  resourceOutput: 1
+  resourceOutput: 2
   wealthGeneration: 2
   workingHours: 00000000010000000200000003000000
   socialHours: 03000000

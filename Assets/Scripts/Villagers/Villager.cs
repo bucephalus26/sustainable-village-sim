@@ -114,7 +114,7 @@ public class Villager : MonoBehaviour
         if (Application.isPlaying && brain != null && brain.CurrentState != null)
         {
             string stateLabel = brain.CurrentState.GetType().Name.Replace("State", "");
-            GUIStyle style = new GUIStyle();
+            GUIStyle style = new();
             style.normal.textColor = Color.white;
             style.fontSize = 12;
             style.fontStyle = FontStyle.Bold;
