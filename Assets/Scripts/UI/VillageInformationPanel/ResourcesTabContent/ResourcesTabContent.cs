@@ -7,7 +7,7 @@ public class ResourcesTabContent : MonoBehaviour
     [SerializeField] private List<ResourceDisplayItem> resourceDisplays = new();
 
     [Header("Resource Chart")]
-    [SerializeField] private GameObject resourceChart;
+    [SerializeField] private ResourceChartController resourceChartController;
 
     [Header("Update Settings")]
     [SerializeField] private float updateInterval = 0.5f; // How often to update (in seconds)
@@ -41,12 +41,9 @@ public class ResourcesTabContent : MonoBehaviour
 
     private void UpdateResourceChart()
     {
-        // This would update your resource history chart
-        // For now, this is a placeholder
-        if (resourceChart != null)
+        if (resourceChartController != null)
         {
-            // Update chart data
-            // resourceChart.GetComponent<ResourceChart>().UpdateChart();
+            resourceChartController.UpdateChart();
         }
     }
 }

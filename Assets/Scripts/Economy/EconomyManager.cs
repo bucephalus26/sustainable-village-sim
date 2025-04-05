@@ -60,17 +60,30 @@ public class EconomyManager : MonoBehaviour
         {
             resourceHistory[type] = new List<float>();
         }
+
+        RecordEconomySnapshot();
     }
 
-    private void Update()
+    private void OnEnable()
+    {
+        if (EventManager.Instance != null)
+        {
+            EventManager.Instance.AddListener<TimeEvents.DayChangedEvent>(OnDayChanged);
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (EventManager.Instance != null)
+        {
+            EventManager.Instance.RemoveListener<TimeEvents.DayChangedEvent>(OnDayChanged);
+        }
+    }
+
+    private void OnDayChanged(TimeEvents.DayChangedEvent evt)
     {
         // Record history every game day
-        if (TimeManager.Instance != null &&
-            TimeManager.Instance.CurrentTimeOfDay == TimeOfDay.Morning &&
-            TimeManager.Instance.CurrentHour < 7f)
-        {
-            RecordEconomySnapshot();
-        }
+        RecordEconomySnapshot();
     }
 
     public float GetResourceDailyChange(ResourceType type)
