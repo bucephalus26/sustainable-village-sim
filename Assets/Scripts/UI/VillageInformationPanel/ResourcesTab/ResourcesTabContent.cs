@@ -10,9 +10,8 @@ public class ResourcesTabContent : MonoBehaviour
     [SerializeField] private ResourceChartController resourceChartController;
 
     [Header("Update Settings")]
-    [SerializeField] private float updateInterval = 0.5f; // How often to update (in seconds)
-
     private float updateTimer = 0f;
+    [SerializeField] private float updateInterval = 0.5f;
 
     private void Update()
     {

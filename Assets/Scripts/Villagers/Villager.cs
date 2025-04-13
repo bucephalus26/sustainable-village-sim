@@ -9,8 +9,7 @@ public class Villager : MonoBehaviour
     public float personalWealth = 0f;
 
     [Header("Happiness")]
-    [SerializeField]
-    public float happiness = 50f;
+    [SerializeField] public float happiness = 50f;
 
     [Header("Debug Info")]
     [SerializeField] private string professionName = "Unassigned";
@@ -20,7 +19,8 @@ public class Villager : MonoBehaviour
     [SerializeField] private float restNeed = 100f;
     [SerializeField] private float socialNeed = 100f;
 
-    private VillagerBrain brain;
+    public VillagerBrain Brain { get; private set; }
+    private SpriteRenderer villagerSpriteRenderer;
     private bool isInitialized = false;
 
     public void Initialize(ProfessionData profData)
@@ -28,13 +28,20 @@ public class Villager : MonoBehaviour
         if (isInitialized) return;
 
         // Initialize the brain, which handles all villager behavior
-        brain = GetComponent<VillagerBrain>();
-        if (brain == null)
+        Brain = GetComponent<VillagerBrain>();
+        if (Brain == null)
         {
-            brain = gameObject.AddComponent<VillagerBrain>();
+            Brain = gameObject.AddComponent<VillagerBrain>();
         }
 
-        brain.Initialize(this, profData);
+        villagerSpriteRenderer = GetComponentInChildren<SpriteRenderer>();
+
+        if (villagerSpriteRenderer == null)
+        {
+            Debug.LogError($"Villager '{this.name}' could not find a Renderer component in itself or its children. Visibility toggling will fail.", this.gameObject);
+        }
+
+        Brain.Initialize(this, profData);
 
         // Set profession name for inspector
         if (profData != null)
@@ -48,16 +55,16 @@ public class Villager : MonoBehaviour
     private void Update()
     {
         // Update inspector debug info if brain is initialized
-        if (brain != null && brain.NeedsManager != null)
+        if (Brain != null && Brain.NeedsManager != null)
         {
             // Update current state
-            if (brain.CurrentState != null)
+            if (Brain.CurrentState != null)
             {
-                currentState = brain.CurrentState.GetType().Name.Replace("State", "");
+                currentState = Brain.CurrentState.GetType().Name.Replace("State", "");
             }
 
             // Update needs
-            foreach (var need in brain.NeedsManager.GetAllNeeds())
+            foreach (var need in Brain.NeedsManager.GetAllNeeds())
             {
                 if (need.Name == "Hunger")
                     hungerNeed = need.CurrentValue;
@@ -68,23 +75,23 @@ public class Villager : MonoBehaviour
             }
 
             // Update current activity
-            if (brain.CurrentState is WorkingState)
+            if (Brain.CurrentState is WorkingState)
             {
                 currentActivity = $"Working as {professionName}";
             }
-            else if (brain.CurrentState is SocializingState)
+            else if (Brain.CurrentState is SocializingState)
             {
                 currentActivity = "Socializing";
             }
-            else if (brain.CurrentState is SleepingState)
+            else if (Brain.CurrentState is SleepingState)
             {
                 currentActivity = "Sleeping";
             }
-            else if (brain.CurrentState is NeedFulfillmentState)
+            else if (Brain.CurrentState is NeedFulfillmentState)
             {
                 currentActivity = $"Satisfying need";
             }
-            else if (brain.CurrentState is IdleState)
+            else if (Brain.CurrentState is IdleState)
             {
                 currentActivity = "Idle";
             }
@@ -106,14 +113,22 @@ public class Villager : MonoBehaviour
         health = Mathf.Clamp(health + amount, 0, 100);
     }
 
+    public void SetVisibility(bool isVisible)
+    {
+        if (villagerSpriteRenderer != null && villagerSpriteRenderer.enabled != isVisible)
+        {
+            villagerSpriteRenderer.enabled = isVisible;
+        }
+    }
+
     // For debugging - display villager status as gizmo text
     private void OnDrawGizmos()
     {
         Vector3 textPos = transform.position + Vector3.up * 1.5f;
 
-        if (Application.isPlaying && brain != null && brain.CurrentState != null)
+        if (Application.isPlaying && Brain != null && Brain.CurrentState != null)
         {
-            string stateLabel = brain.CurrentState.GetType().Name.Replace("State", "");
+            string stateLabel = Brain.CurrentState.GetType().Name.Replace("State", "");
             GUIStyle style = new();
             style.normal.textColor = Color.white;
             style.fontSize = 12;

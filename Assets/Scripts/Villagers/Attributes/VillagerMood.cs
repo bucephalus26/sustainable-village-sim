@@ -6,7 +6,7 @@ public class VillagerMood : MonoBehaviour
     [Header("Happiness Settings")]
     [SerializeField] [Range(0f, 100f)] private float happiness = 50f;
     [SerializeField] private string currentMood;
-    [SerializeField] private bool showMoodIndicator = true;
+    [SerializeField] private bool showMoodIndicator = false;
 
     [Header("Factor Weights")]
     [SerializeField] [Range(0f, 2f)] private float needsWeight = 1.0f;

@@ -95,9 +95,9 @@ public class ResourceChartController : MonoBehaviour
         // Add padding to the top
         float range = overallMaxY - overallMinY;
         overallMaxY += range * yAxisPadding;
-        overallMinY = Mathf.Max(0, overallMinY); // Assuming resources can't be negative
+        overallMinY = Mathf.Max(0, overallMinY);
 
-        // Round Y axis labels nicely (optional but good practice)
+        // Round Y axis labels
         // Find a nice step value
         float niceRange = GetNiceRange(overallMinY, overallMaxY, yAxisSteps + 1);
         float niceStep = niceRange / yAxisSteps;
@@ -108,9 +108,8 @@ public class ResourceChartController : MonoBehaviour
 
 
         // Determine the number of X-axis points (days) based on the max data points found
-        // If we want to *always* show 5 days even if data is less, use historyDaysToShow
         int actualXPoints = Mathf.Min(maxDataPoints, historyDaysToShow);
-        if (actualXPoints < 1) actualXPoints = 1; // Need at least one point/label
+        if (actualXPoints < 1) actualXPoints = 1;
 
         // 2. Update Chart Title
         if (chartTitle != null)
@@ -122,7 +121,7 @@ public class ResourceChartController : MonoBehaviour
         UpdateYAxisLabels(niceMinY, niceMaxY, yAxisSteps);
 
         // 4. Update X Axis Labels
-        UpdateXAxisLabels(actualXPoints); // Pass the actual number of points
+        UpdateXAxisLabels(actualXPoints);
 
         // 5. Update Legend
         UpdateLegend(chartData);
@@ -207,7 +206,7 @@ public class ResourceChartController : MonoBehaviour
         labelList.Clear();
     }
 
-    // Helper to calculate a "nice" number range for axis scales
+    // Helper to calculate a number range for axis scales
     private float GetNiceRange(float min, float max, int targetSteps)
     {
         if (targetSteps <= 0) targetSteps = 1;

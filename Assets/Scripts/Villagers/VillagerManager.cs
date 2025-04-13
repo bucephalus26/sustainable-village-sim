@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class VillagerManager : MonoBehaviour
@@ -50,7 +51,7 @@ public class VillagerManager : MonoBehaviour
     {
         if (villagerContainer == null)
         {
-            GameObject containerObj = new GameObject("Villagers");
+            GameObject containerObj = new("Villagers");
             villagerContainer = containerObj.transform;
         }
 
@@ -228,6 +229,27 @@ public class VillagerManager : MonoBehaviour
 
     public List<Villager> GetVillagers()
     {
+        // Filters out any destroyed villagers
+        villagers.RemoveAll(item => item == null);
         return villagers;
     }
+
+    public float GetAverageHappiness()
+    {
+        var validVillagers = GetVillagers();
+        if (!validVillagers.Any()) return 50f;
+
+        return validVillagers.Average(v => v.happiness);
+    }
+
+    public ProfessionData GetProfessionData(ProfessionType type)
+    {
+        if (availableProfessions == null || type == ProfessionType.Unemployed)
+        {
+            return null;
+        }
+
+        return availableProfessions.FirstOrDefault(p => p.type == type);
+    }
+
 }
