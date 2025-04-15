@@ -74,6 +74,4 @@ public static class VillagerEvents
         public VillagerMood.MoodState NewMood { get; set; }
         public float HappinessValue { get; set; }
     }
-
-
 }

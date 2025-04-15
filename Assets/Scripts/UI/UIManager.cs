@@ -13,6 +13,14 @@ public class UIManager : MonoBehaviour
     [SerializeField] private VillageInformationPanel villageInformationPanel;
     [SerializeField] private GameObject mainDashboard;
 
+    [Header("Villager Interaction")]
+    [SerializeField] private VillagerInfoPopupController villagerInfoPopupPrefab;
+    [SerializeField] private VillagerDetailPanelController villagerDetailPanelPrefab;
+    [SerializeField] private GameObject detailViewOverlay;
+
+    private VillagerInfoPopupController villagerInfoPopupInstance;
+    private VillagerDetailPanelController villagerDetailPanelInstance;
+
     private void Awake()
     {
         // Singleton setup
@@ -20,11 +28,52 @@ public class UIManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
+            InstantiateVillagerPopup();
+            InstantiateDetailPanel();
+            if (detailViewOverlay != null) detailViewOverlay.SetActive(false);
         }
         else
         {
             Destroy(gameObject);
         }
+    }
+
+    void InstantiateVillagerPopup()
+    {
+        if (villagerInfoPopupPrefab != null && villagerInfoPopupInstance == null)
+        {
+            Canvas mainCanvas = FindFirstObjectByType<Canvas>();
+            if (mainCanvas != null)
+            {
+                villagerInfoPopupInstance = Instantiate(villagerInfoPopupPrefab, mainCanvas.transform);
+                villagerInfoPopupInstance.gameObject.SetActive(false);
+                villagerInfoPopupInstance.name = "VillagerInfoPopup_Instance";
+            }
+            else
+            {
+                Debug.LogError("UIManager could not find a Canvas to instantiate the Villager Info Popup into!");
+            }
+        }
+        else if (villagerInfoPopupPrefab == null)
+        {
+            Debug.LogError("VillagerInfoPopup Prefab not assigned in UIManager Inspector!");
+        }
+    }
+
+    void InstantiateDetailPanel()
+    {
+        if (villagerDetailPanelPrefab != null && villagerDetailPanelInstance == null)
+        {
+            Canvas mainCanvas = FindFirstObjectByType<Canvas>();
+            if (mainCanvas != null)
+            {
+                villagerDetailPanelInstance = Instantiate(villagerDetailPanelPrefab, mainCanvas.transform);
+                villagerDetailPanelInstance.gameObject.SetActive(false); // Start hidden
+                villagerDetailPanelInstance.name = "VillagerDetailPanel_Instance";
+            }
+            else { Debug.LogError("UIManager could not find Canvas for Detail Panel!"); }
+        }
+        else if (villagerDetailPanelPrefab == null) { Debug.LogError("VillagerDetailPanel Prefab not assigned in UIManager!"); }
     }
 
     private void Start()
@@ -67,17 +116,53 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    // Villager Popup
+    public void ShowVillagerPopup(Villager villager)
+    {
+        if (villagerInfoPopupInstance != null)
+        {
+            villagerInfoPopupInstance.ShowPopup(villager);
+        }
+        else
+        {
+            Debug.LogWarning("Villager Info Popup instance is missing. Cannot show popup.");
+        }
+    }
+
+    public void HideVillagerPopup()
+    {
+        if (villagerInfoPopupInstance != null && villagerInfoPopupInstance.gameObject.activeInHierarchy)
+        {
+            villagerInfoPopupInstance.HidePopup();
+        }
+    }
+
+    public void ShowVillagerDetailPanel(Villager villager)
+    {
+        HideVillagerPopup(); // Close small popup if open
+        if (villagerDetailPanelInstance != null)
+        {
+            villagerDetailPanelInstance.ShowPanel(villager);
+            if (detailViewOverlay != null) detailViewOverlay.SetActive(true); // Show overlay
+        }
+        else { Debug.LogWarning("Villager Detail Panel instance is missing."); }
+    }
+
+    public void HideVillagerDetailPanel()
+    {
+        if (villagerDetailPanelInstance != null && villagerDetailPanelInstance.gameObject.activeInHierarchy)
+        {
+            villagerDetailPanelInstance.HidePanel();
+            if (detailViewOverlay != null) detailViewOverlay.SetActive(false); // Hide overlay
+        }
+    }
+
     public void ShowMainDashboard()
     {
         if (mainDashboard != null)
         {
             mainDashboard.SetActive(true);
         }
-    }
-
-    public GameObject GetDashboard()
-    {
-        return mainDashboard;
     }
 
     // Method to close the dashboard
@@ -89,4 +174,8 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    public GameObject GetDashboard()
+    {
+        return mainDashboard;
+    }
 }
