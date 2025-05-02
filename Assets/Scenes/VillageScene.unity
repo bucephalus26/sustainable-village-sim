@@ -8713,11 +8713,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f90fb857f941f824aab343ae58a68a4e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  initialFoodAmount: 50
-  initialWealthAmount: 20
-  initialGoodsAmount: 10
-  initialStoneAmount: 10
-  foodBasePrice: 2
+  initialFoodAmount: 100
+  initialWealthAmount: 50
+  initialGoodsAmount: 50
+  initialStoneAmount: 20
+  foodBasePrice: 1
   goodsBasePrice: 2
   stoneBasePrice: 3
 --- !u!1 &1119548266

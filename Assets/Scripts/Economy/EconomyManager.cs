@@ -7,7 +7,7 @@ public class EconomyManager : MonoBehaviour
     public static EconomyManager Instance { get; private set; }
 
     [Header("Economy Settings")]
-    [SerializeField] private float initialFoodAmount = 100f;
+    [SerializeField] private float initialFoodAmount = 200f;
     [SerializeField] private float initialWealthAmount = 100f;
     [SerializeField] private float initialGoodsAmount = 50f;
     [SerializeField] private float initialStoneAmount = 20f;

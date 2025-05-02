@@ -198,43 +198,38 @@ public class VillagerBrain : MonoBehaviour
 
     public void DetermineNextAction()
     {
-        // Check for critical needs first - no change
+        // STEP 1: Critical Need Check 
+        // Handle urgent needs before any other decision-making
         Need urgentNeed = NeedsManager.GetMostUrgentNeed();
         if (urgentNeed != null)
         {
+            if (urgentNeed.Name == "Hunger" && VillagerComponent.personalWealth < EconomyManager.Instance.GetResourcePrice(ResourceType.Food) * urgentNeed.ResourceAmountNeeded)
+            {
+                // Can't afford food, got to work
+                if (Profession.ProfessionType != ProfessionType.Unemployed)
+                {
+                    Debug.Log($"{VillagerComponent.villagerName} is hungry but broke. Prioritising work.");
+                    TransitionTo(new WorkingState(this));
+                    return;
+                }
+            }
+
             TransitionTo(new NeedFulfillmentState(this, urgentNeed));
             return;
         }
 
-        // Get schedule-appropriate behavior if no urgent needs
+        // Context Variables ---
         TimeOfDay currentTime = TimeManager.Instance.CurrentTimeOfDay;
-
-        // Very unhappy villagers make different choices - no change
         bool isVeryUnhappy = VillagerMood != null && VillagerMood.Happiness < 30f;
 
-        // Create a map of candidate states and their base priority
+        // STEP 2: Calculate Base Priorities
         Dictionary<System.Type, float> statePriorities = new();
-
-        // Add time-appropriate states with base priorities
-        if (Profession.IsWorkingHour() && !isVeryUnhappy)
-        {
-            statePriorities[typeof(WorkingState)] = Personality.workEthic * 10f;
-        }
-
-        if (Profession.IsSocialHour() || isVeryUnhappy)
-        {
-            statePriorities[typeof(SocializingState)] = Personality.sociability * 8f;
-        }
-
-        if (Profession.IsRestingHour())
-        {
-            statePriorities[typeof(SleepingState)] = 12f; // High base priority for sleep during rest hours
-        }
-
-        // Always include idle as a fallback
+        if (Profession.IsWorkingHour() && !isVeryUnhappy) statePriorities[typeof(WorkingState)] = Personality.workEthic * 10f;
+        if (Profession.IsSocialHour() || isVeryUnhappy) statePriorities[typeof(SocializingState)] = Personality.sociability * 8f;
+        if (Profession.IsRestingHour()) statePriorities[typeof(SleepingState)] = 12f;
         statePriorities[typeof(IdleState)] = 1f;
 
-        // Apply goal preferences - NEW
+        // STEP 3: Apply Goal Preferences
         if (Goals != null)
         {
             foreach (var stateEntry in statePriorities.Keys.ToList())
@@ -247,9 +242,58 @@ public class VillagerBrain : MonoBehaviour
             }
         }
 
-        // Choose the highest priority state
+        // STEP 4: Apply Personality Overrides
+
+        // 4.1: Impulsivity - Random behaviour override
+        if (Random.value < Personality.impulsivity * 0.15f) // 15% chance at max impulsivity
+        {
+            List<System.Type> impulsiveChoices = new() { typeof(SocializingState), typeof(IdleState) };
+            impulsiveChoices.RemoveAll(t => !statePriorities.ContainsKey(t));
+
+            if (impulsiveChoices.Count > 0)
+            {
+                System.Type impulsiveChoice = impulsiveChoices[Random.Range(0, impulsiveChoices.Count)];
+                Debug.Log($"{VillagerComponent.villagerName} acting impulsively, choosing {impulsiveChoice.Name}");
+                TransitionTo(CreateStateInstance(impulsiveChoice));
+                return;
+            }
+        }
+
+        // 4.2: Sociability - Boost social priority if need is low
+        if (currentTime != TimeOfDay.Night && statePriorities.ContainsKey(typeof(SocializingState)))
+        {
+            Need socialNeed = NeedsManager?.GetAllNeeds().FirstOrDefault(n => n.Name == "Social");
+            if (socialNeed != null && socialNeed.CurrentValue < 85f) // If need is below 85%
+            {
+                float needFactor = (100f - socialNeed.CurrentValue) / 100f; // 0 to 1
+                statePriorities[typeof(SocializingState)] += Personality.sociability * needFactor * 5f;
+            }
+        }
+
+        // 4.3: Work Ethic - Low work ethic villagers might skip work
+        if (Profession.IsWorkingHour() && statePriorities.ContainsKey(typeof(WorkingState)) && Personality.workEthic < 0.4f)
+        {
+            if (Random.value < (0.4f - Personality.workEthic) * 0.5f)
+            {
+                statePriorities[typeof(WorkingState)] *= 0.1f; // Reduce work priority
+                Debug.Log($"{VillagerComponent.villagerName} feeling lazy, might skip work.");
+            }
+        }
+
+        // 4.4: Unhappiness - Avoid work when very unhappy
+        if (isVeryUnhappy && statePriorities.ContainsKey(typeof(WorkingState)))
+        {
+            statePriorities[typeof(WorkingState)] *= 0.2f; // Strongly prefer not working
+            if (statePriorities.ContainsKey(typeof(SocializingState)))
+                statePriorities[typeof(SocializingState)] += 5f;
+            if (statePriorities.ContainsKey(typeof(IdleState)))
+                statePriorities[typeof(IdleState)] += 2f;
+            Debug.Log($"{VillagerComponent.villagerName} is unhappy, avoiding work.");
+        }
+
+        // STEP 5: Select Highest Priority State
         System.Type selectedStateType = null;
-        float highestPriority = 0f;
+        float highestPriority = -1f;
 
         foreach (var stateEntry in statePriorities)
         {
@@ -260,7 +304,7 @@ public class VillagerBrain : MonoBehaviour
             }
         }
 
-        // Transition to the selected state
+        // STEP 6: Transition to Selected State
         if (selectedStateType != null)
         {
             IVillagerState newState = CreateStateInstance(selectedStateType);
@@ -271,7 +315,6 @@ public class VillagerBrain : MonoBehaviour
         }
         else
         {
-            // Fallback to idle
             TransitionTo(new IdleState(this));
         }
     }

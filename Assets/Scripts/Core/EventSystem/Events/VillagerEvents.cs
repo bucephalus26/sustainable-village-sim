@@ -48,6 +48,7 @@ public static class VillagerEvents
         public string NeedType { get; set; }
         public ResourceType RequiredResource { get; set; }
         public float AmountNeeded { get; set; }
+        public string Reason { get; set; }
     }
 
     public class ProfessionWorkCompletedEvent : IVillageEvent

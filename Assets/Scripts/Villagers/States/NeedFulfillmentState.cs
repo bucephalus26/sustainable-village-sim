@@ -24,6 +24,7 @@ public class NeedFulfillmentState : VillagerBaseState
         if (!hasReachedDestination && brain.Movement.HasReachedTarget())
         {
             hasReachedDestination = true;
+            fulfillmentTimer = 0f;
         }
 
         if (hasReachedDestination)
@@ -32,8 +33,18 @@ public class NeedFulfillmentState : VillagerBaseState
 
             if (fulfillmentTimer >= timeToFulfill)
             {
-                brain.NeedsManager.FulfillNeed(currentNeed);
-                brain.DetermineNextAction();
+
+                bool success = brain.NeedsManager.FulfillNeed(currentNeed);
+
+                if (success)
+                {
+                    brain.DetermineNextAction(); // Success, decide next action
+                }
+                else
+                {
+                    Debug.LogWarning($"{brain.VillagerComponent.villagerName} failed to fulfill {currentNeed.Name}. Transitioning to Idling.");
+                    brain.TransitionTo(new IdleState(brain));
+                }
             }
         }
         else
@@ -42,6 +53,7 @@ public class NeedFulfillmentState : VillagerBaseState
             fulfillmentTimer += Time.deltaTime;
             if (fulfillmentTimer > 10f) // 10 seconds of real time
             {
+                Debug.LogWarning($"{brain.VillagerComponent.villagerName} couldn't reach {currentNeed.Name} location. Idling.");
                 brain.TransitionTo(new IdleState(brain));
             }
         }

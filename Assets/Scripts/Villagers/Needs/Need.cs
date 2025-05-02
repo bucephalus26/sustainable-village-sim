@@ -7,7 +7,7 @@ public abstract class Need
     [SerializeField] private string name;
     [SerializeField] private float criticalThreshold = 20f;
     [SerializeField] private float baseDecayRate = 1.0f; // Per game hour
-    [SerializeField] private float importanceWeight = 1.0f; // Higher = more important
+    [SerializeField] private float importanceWeight = 1.0f;
     [SerializeField] protected ResourceType requiredResource = ResourceType.None;
     [SerializeField] protected float resourceAmountNeeded = 1.0f;
 
@@ -71,31 +71,50 @@ public abstract class Need
         }
     }
 
-    public virtual void Fulfill(float fulfillmentAmount)
+    public virtual bool Fulfill(float fulfillmentAmount)
     {
         // Check if we need resources and have enough
         if (RequiredResource != ResourceType.None)
         {
-            if (!EconomyManager.ConsumeResource(RequiredResource, ResourceAmountNeeded))
-            {
-                Debug.Log($"Failed to consume resources for {Villager.villagerName}");
+            float resourceCost = ResourceAmountNeeded * EconomyManager.Instance.GetResourcePrice(RequiredResource);
 
+            if (Villager.personalWealth >= resourceCost) // Check if villager can afford it
+            {
+                Villager.SpendWealth(resourceCost);
+
+                if (!EconomyManager.ConsumeResource(RequiredResource, ResourceAmountNeeded))
+                {
+                    Debug.LogWarning($"{Villager.villagerName} could afford {RequiredResource}, but village supply is empty!");
+
+                    EventManager.Instance.TriggerEvent(new VillagerEvents.NeedFulfillmentFailedEvent
+                    {
+                        VillagerName = Villager.villagerName,
+                        NeedType = Name,
+                        RequiredResource = RequiredResource,
+                        AmountNeeded = ResourceAmountNeeded
+                    });
+                    return false;
+                }
+                Debug.Log($"Successfully consumed {ResourceAmountNeeded} of {RequiredResource} for {Villager.villagerName}");
+            }
+            else
+            {
+                Debug.LogWarning($"{Villager.villagerName} cannot afford {ResourceAmountNeeded} {RequiredResource}. Needs {resourceCost:F1} wealth, has {Villager.personalWealth:F1}.");
                 EventManager.Instance.TriggerEvent(new VillagerEvents.NeedFulfillmentFailedEvent
                 {
                     VillagerName = Villager.villagerName,
                     NeedType = Name,
                     RequiredResource = RequiredResource,
-                    AmountNeeded = ResourceAmountNeeded
+                    AmountNeeded = ResourceAmountNeeded,
+                    Reason = "Insufficient personal wealth"
                 });
-                return;
+                return false;
             }
-
-            Debug.Log($"Successfully consumed {ResourceAmountNeeded} of {RequiredResource} for {Villager.villagerName}");
-
         }
 
         // Apply diminishing returns if fulfillment is frequent
-        float gameHoursSinceLastFulfillment = (Time.time * TimeManager.Instance.TimeScaleFactor) - lastFulfillmentTime;
+        float gameTimeNow = Time.time * TimeManager.Instance.TimeScaleFactor;
+        float gameHoursSinceLastFulfillment = gameTimeNow - lastFulfillmentTime;
 
         if (gameHoursSinceLastFulfillment < fulfillmentMemoryDuration)
         {
@@ -108,24 +127,27 @@ public abstract class Need
             // Reset count if it's been a while
             fulfillmentCount = 1;
         }
-
-        // Update last fulfillment time
-        lastFulfillmentTime = Time.time * TimeManager.Instance.TimeScaleFactor;
+        lastFulfillmentTime = gameTimeNow; // Update last fulfillment time
 
         // Apply the fulfillment
         float previousValue = CurrentValue;
         CurrentValue = Mathf.Clamp(CurrentValue + fulfillmentAmount, 0f, 100f);
 
         // Notify about fulfillment
-        if (IsCritical(previousValue) && !IsCritical(CurrentValue))
+        if (CurrentValue > previousValue)
         {
-            EventManager.Instance.TriggerEvent(new VillagerEvents.NeedFulfilledEvent
+            // Trigger event only if the need was previously critical and now isn't
+            if (IsCritical(previousValue) && !IsCritical(CurrentValue))
             {
-                VillagerName = Villager.villagerName,
-                NeedType = Name,
-                NewValue = CurrentValue
-            });
+                EventManager.Instance.TriggerEvent(new VillagerEvents.NeedFulfilledEvent
+                {
+                    VillagerName = Villager.villagerName,
+                    NeedType = Name,
+                    NewValue = CurrentValue
+                });
+            }
         }
+        return true;
     }
 
     public virtual void FulfillGradually(float deltaTime, float ratePerGameHour = 10f)

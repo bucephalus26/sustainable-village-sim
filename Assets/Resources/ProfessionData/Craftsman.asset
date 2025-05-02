@@ -18,7 +18,7 @@ MonoBehaviour:
   workInterval: 3
   primaryResourceType: 2
   resourceOutput: 2
-  wealthGeneration: 2
+  wealthGeneration: 0.8
   workingHours: 0000000002000000
   socialHours: 03000000
   restingHours: 04000000
