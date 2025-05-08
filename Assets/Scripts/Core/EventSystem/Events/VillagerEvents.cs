@@ -48,6 +48,7 @@ public static class VillagerEvents
         public string NeedType { get; set; }
         public ResourceType RequiredResource { get; set; }
         public float AmountNeeded { get; set; }
+        public string Reason { get; set; }
     }
 
     public class ProfessionWorkCompletedEvent : IVillageEvent
@@ -66,4 +67,12 @@ public static class VillagerEvents
         public float NewTotal { get; set; }
     }
 
+    public class MoodChangedEvent : IVillageEvent
+    {
+        public float Timestamp { get; private set; } = Time.time;
+        public string VillagerName { get; set; }
+        public VillagerMood.MoodState OldMood { get; set; }
+        public VillagerMood.MoodState NewMood { get; set; }
+        public float HappinessValue { get; set; }
+    }
 }

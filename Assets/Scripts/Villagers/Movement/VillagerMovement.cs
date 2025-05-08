@@ -38,7 +38,7 @@ public class VillagerMovement : MonoBehaviour
 
         if (HasReachedTarget())
         {
-            // Visual feedback when destination reached (optional)
+            // Visual feedback when destination reached
             if (spriteRenderer != null)
             {
                 spriteRenderer.color = originalColor;
@@ -52,7 +52,7 @@ public class VillagerMovement : MonoBehaviour
             targetPosition,
             moveSpeed * Time.deltaTime);
 
-        // Optional: Face the movement direction
+        //  Face the movement direction
         Vector3 direction = (targetPosition - transform.position).normalized;
         if (direction.x != 0)
         {

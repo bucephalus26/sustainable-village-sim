@@ -5,7 +5,7 @@ using UnityEngine;
 public interface INeedsManager
 {
     void UpdateNeeds();
-    void FulfillNeed(Need need);
+    bool FulfillNeed(Need need);
     Need GetMostUrgentNeed();
     IReadOnlyList<Need> GetAllNeeds();
     bool HasUrgentNeeds { get; }
@@ -43,17 +43,13 @@ public class NeedsManager : INeedsManager
         }
     }
 
-    public void FulfillNeed(Need need)
+    public bool FulfillNeed(Need need)
     {
         float fulfillmentAmount = 30f;
 
-        if (personality != null)
-        {
-            // Resilient villagers get more benefit from need fulfillment
-            fulfillmentAmount *= (1f + (personality.resilience * 0.2f));
-        }
-
-        need.Fulfill(fulfillmentAmount);
+        // Resilient villagers get more benefit from need fulfillment
+        if (personality != null) { fulfillmentAmount *= (1f + (personality.resilience * 0.2f)); }
+        return need.Fulfill(fulfillmentAmount);
     }
 
     public Need GetMostUrgentNeed()
@@ -79,7 +75,7 @@ public class NeedsManager : INeedsManager
             .FirstOrDefault();
 
         // Only return if it's somewhat urgent (> 0.4 urgency)
-        if (mostUrgentNeed != null && mostUrgentNeed.GetUrgency() > 0.4f)
+        if (mostUrgentNeed != null && mostUrgentNeed.GetUrgency() > 0.5f)
         {
             return mostUrgentNeed;
         }

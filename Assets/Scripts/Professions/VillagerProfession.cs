@@ -72,35 +72,35 @@ public class VillagerProfession : MonoBehaviour
     {
         if (professionData == null) return;
 
-        // Get current work efficiency
-        float efficiency = 1.0f;
-        if (brain?.VillagerMood != null)
-        {
-            efficiency = brain.VillagerMood.GetWorkEfficiencyMultiplier();
-        }
+        // Get work efficiency
+        float efficiency = brain?.VillagerMood?.GetWorkEfficiencyMultiplier() ?? 1.0f;
 
         // Add resources to economy - adjusted based on work efficiency
         float adjustedOutput = professionData.resourceOutput;
-        if (professionData.primaryResourceType == ResourceType.Food)
-        {
-            adjustedOutput *= 0.5f; // Reduce food production by 50%
-        }
+        if (professionData.primaryResourceType == ResourceType.Food) adjustedOutput *= 0.5f;
+        adjustedOutput *= efficiency; // Apply work efficiency (happiness influenced)
 
-        // Apply work efficiency (happiness effect)
-        adjustedOutput *= efficiency;
+        float adjustedWealth = professionData.wealthGeneration * efficiency;
 
         if (professionData.primaryResourceType != ResourceType.None)
         {
-            EconomyManager.Instance.AddResource(
-                professionData.primaryResourceType,
-                adjustedOutput);
+            EconomyManager.Instance.AddResource(professionData.primaryResourceType, adjustedOutput);
         }
 
         // Add wealth to villager
         if (professionData.wealthGeneration > 0)
         {
-            float adjustedWealth = professionData.wealthGeneration * efficiency;
             villager.EarnWealth(adjustedWealth);
+        }
+
+        // Update goal based on work
+        if (brain?.Goals != null)
+        {
+            brain.Goals.UpdateGoalProgress(GoalType.WorkMastery, 0.5f * efficiency); // Progress slightly faster if happy/efficient
+
+            float resourceValue = EconomyManager.Instance.GetResourcePrice(professionData.primaryResourceType) * adjustedOutput;
+            float cycleContribution = resourceValue + adjustedWealth;
+            brain.Goals.UpdateGoalProgress(GoalType.VillageContributor, cycleContribution);
         }
 
         // Trigger event

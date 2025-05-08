@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class VillagerGoals : MonoBehaviour
@@ -45,7 +46,7 @@ public class VillagerGoals : MonoBehaviour
         if (checkTimer >= progressCheckInterval)
         {
             checkTimer = 0f;
-            UpdateGoalProgress();
+            CheckGoalStatus();
         }
     }
 
@@ -53,7 +54,7 @@ public class VillagerGoals : MonoBehaviour
     {
         activeGoals.Clear();
 
-        var personality = GetComponent<VillagerPersonality>();
+        VillagerPersonality personality = GetComponent<VillagerPersonality>();
 
         // Determine how many goals this villager should have
         int goalCount = 1;
@@ -105,29 +106,26 @@ public class VillagerGoals : MonoBehaviour
 
     public void AddGoal(GoalType goalType)
     {
-        if (activeGoals.Count >= maxActiveGoals)
-        {
-            Debug.LogWarning($"{villager.villagerName} already has maximum goals");
-            return;
-        }
+        if (activeGoals.Count >= maxActiveGoals) return;
 
-        // Create the goal with parameters based on type
-        Goal newGoal = new()
-        {
-            type = goalType,
-            progress = 0f
-        };
+        // Create goal based on type
+        Goal newGoal = new() { type = goalType, progress = 0f };
+        VillagerPersonality personality = GetComponent<VillagerPersonality>();
+        float ambitionFactor = (personality != null) ? (1f + (personality.ambition - 0.5f)) : 1f;
+        float sociabilityFactor = (personality != null) ? (1f + (personality.sociability - 0.5f)) : 1f;
+        float altruismFactor = (personality != null) ? (1f + (personality.altruism - 0.5f)) : 1f;
 
-        // Set target based on goal type
+        // Set target based on goal type, personality
         switch (goalType)
         {
-            case GoalType.AccumulateWealth:
-                newGoal.target = 100f + Random.Range(50f, 150f);
-                newGoal.description = $"Accumulate {newGoal.target} wealth";
+            case GoalType.AccumulateWealth:  // influenced by ambition
+                newGoal.target = Mathf.Max(50f, (100f + Random.Range(50f, 150f)) * ambitionFactor);
+                newGoal.description = $"Accumulate {newGoal.target:F0} wealth";
                 break;
 
-            case GoalType.SocialProminence:
-                newGoal.target = 10f + Random.Range(5f, 15f);
+            case GoalType.SocialProminence: // influenced by blend of sociability and ambition
+                float baseSocialTarget = 10f + Random.Range(5f, 15f);
+                newGoal.target = Mathf.Max(5f, baseSocialTarget * Mathf.Lerp(sociabilityFactor, ambitionFactor, 0.3f));
                 newGoal.description = $"Interact with {Mathf.RoundToInt(newGoal.target)} different villagers";
                 break;
 
@@ -136,27 +134,25 @@ public class VillagerGoals : MonoBehaviour
                 newGoal.description = "Master your profession";
                 break;
 
-            case GoalType.VillageContributor:
-                newGoal.target = 200f + Random.Range(100f, 300f);
-                newGoal.description = $"Contribute {newGoal.target} resources to the village";
+            case GoalType.VillageContributor: // influenced by blend of sociability and ambition
+                float baseContribTarget = 200f + Random.Range(100f, 300f);
+                newGoal.target = Mathf.Max(100f, baseContribTarget * Mathf.Lerp(altruismFactor, ambitionFactor, 0.4f));
+                newGoal.description = $"Contribute {newGoal.target:F0} resources value";
                 break;
         }
 
         activeGoals.Add(newGoal);
     }
 
-    private void UpdateGoalProgress()
+    public void CheckGoalStatus()
     {
         if (villager == null) return;
 
-        // Track which goals were updated
-        bool anyProgressMade = false;
-
-        // Check each active goal
+        // Check active goals
         for (int i = activeGoals.Count - 1; i >= 0; i--)
         {
             Goal goal = activeGoals[i];
-            float oldProgress = goal.progress;
+            if (goal.completed) continue; // Skip already completed
 
             // Update progress based on goal type
             switch (goal.type)
@@ -166,66 +162,75 @@ public class VillagerGoals : MonoBehaviour
                     break;
 
                 case GoalType.SocialProminence:
-                    // For now, just gradual progress when socializing
                     if (brain.CurrentState is SocializingState)
                     {
-                        goal.progress += 0.1f; // Very simple implementation
+                        UpdateGoalProgress(GoalType.SocialProminence, 0.05f);
                     }
                     break;
 
                 case GoalType.WorkMastery:
-                    // Progress based on time spent working efficiently
-                    if (brain.CurrentState is WorkingState)
-                    {
-                        // This is placeholder - a real implementation would track work accomplishments
-                        goal.progress += 0.5f;
-                    }
-                    break;
-
                 case GoalType.VillageContributor:
-                    // Progress based on resources contributed through work
-                    if (brain.CurrentState is WorkingState)
-                    {
-                        // Simple placeholder implementation
-                        goal.progress += 1f;
-                    }
                     break;
             }
+        }
+        CheckAllGoalCompletions();
+    }
 
-            // Check if meaningful progress was made
-            if (goal.progress > oldProgress + 0.5f)
+    private void CheckAllGoalCompletions()
+    {
+        List<Goal> justCompleted = new();
+        for (int i = activeGoals.Count - 1; i >= 0; i--)
+        {
+            Goal goal = activeGoals[i];
+            CheckGoalCompletion(goal); // Ensure completion status is up-to-date
+            if (goal.completed)
             {
-                anyProgressMade = true;
-                Debug.Log($"{villager.villagerName} made progress on {goal.description}: {goal.progress:F1}/{goal.target:F1}");
-            }
-
-            // Check for completion
-            if (goal.progress >= goal.target && !goal.completed)
-            {
-                goal.completed = true;
-
-                // Apply happiness boost for goal completion
-                if (mood != null)
-                {
-                    float happinessBoost = Random.Range(20f, 30f);
-                    mood.AddHappinessBoost(happinessBoost, 30f); // Give a temporary boost
-
-                    Debug.Log($"{villager.villagerName} completed goal: {goal.description} (+{happinessBoost} happiness)");
-                }
-
-                // Move to completed goals
-                completedGoals.Add(goal);
+                justCompleted.Add(goal);
                 activeGoals.RemoveAt(i);
-
-                // Assign a new goal after delay
-                Invoke("AssignNewGoal", Random.Range(30f, 60f));
             }
         }
 
-        // If progress was made, apply small happiness boost
-        if (anyProgressMade && mood != null)
+        if (justCompleted.Count > 0)
         {
-            mood.AddHappinessBoost(3f, 10f);
+            completedGoals.AddRange(justCompleted);
+            // Assign a new goal only
+            Invoke("AssignNewGoal", Random.Range(15f, 45f));
+        }
+    }
+
+    private void CheckGoalCompletion(Goal goal)
+    {
+        if (goal.completed) return;
+
+        if (goal.progress >= goal.target)
+        {
+            goal.completed = true;
+            if (mood != null)
+            {
+                float happinessBoost = Random.Range(20f, 30f); // Completion boost
+                mood.AddHappinessBoost(happinessBoost, 30f);
+                Debug.Log($"{villager.villagerName} completed goal: {goal.description} (+{happinessBoost} happiness)");
+            }
+        }
+    }
+
+    // Goal modified by profession
+    public void UpdateGoalProgress(GoalType typeToUpdate, float progressToAdd)
+    {
+        Goal goal = activeGoals.FirstOrDefault(g => g.type == typeToUpdate && !g.completed);
+        if (goal != null)
+        {
+            float oldProgress = goal.progress;
+            goal.progress = Mathf.Min(goal.target, goal.progress + progressToAdd);
+
+            if (goal.progress > oldProgress + 0.1f)
+            {
+                Debug.Log($"{villager.villagerName} made progress on {goal.description}: {goal.progress:F1}/{goal.target:F1} (+{progressToAdd:F1})");
+                // Small happiness boost for progress
+                if (mood != null) mood.AddHappinessBoost(1f, 5f); // Small boost for incremental progress
+            }
+
+            CheckGoalCompletion(goal); // Check if goal is now complete
         }
     }
 
@@ -233,7 +238,7 @@ public class VillagerGoals : MonoBehaviour
     {
         if (activeGoals.Count < maxActiveGoals)
         {
-            // Get candidate goals (ones not already active or recently completed)
+            // Get candidate goals (not already active or recently completed)
             List<GoalType> candidates = new();
             foreach (GoalType goalType in availableGoalTypes)
             {
@@ -303,5 +308,4 @@ public class VillagerGoals : MonoBehaviour
     {
         return activeGoals;
     }
-
 }

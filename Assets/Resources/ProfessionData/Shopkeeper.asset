@@ -17,8 +17,8 @@ MonoBehaviour:
   description: Sells goods and manages trade in the village.
   workInterval: 1.5
   primaryResourceType: 0
-  resourceOutput: 1
-  wealthGeneration: 3
+  resourceOutput: 1.5
+  wealthGeneration: 0.7
   workingHours: 000000000200000003000000
   socialHours: 03000000
   restingHours: 04000000

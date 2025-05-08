@@ -7,7 +7,7 @@ public class EconomyManager : MonoBehaviour
     public static EconomyManager Instance { get; private set; }
 
     [Header("Economy Settings")]
-    [SerializeField] private float initialFoodAmount = 100f;
+    [SerializeField] private float initialFoodAmount = 200f;
     [SerializeField] private float initialWealthAmount = 100f;
     [SerializeField] private float initialGoodsAmount = 50f;
     [SerializeField] private float initialStoneAmount = 20f;
@@ -25,7 +25,7 @@ public class EconomyManager : MonoBehaviour
 
     // History for economy stats
     private Dictionary<ResourceType, List<float>> resourceHistory = new();
-    private List<float> wealthHistory = new();
+    private Dictionary<ResourceType, float> dailyNetChange = new();
 
     private void Awake()
     {
@@ -43,50 +43,87 @@ public class EconomyManager : MonoBehaviour
 
     private void InitializeEconomy()
     {
-        // Initialize resources
+        // Initialise resources
         resources[ResourceType.Food] = initialFoodAmount;
         resources[ResourceType.Wealth] = initialWealthAmount;
         resources[ResourceType.Goods] = initialGoodsAmount;
         resources[ResourceType.Stone] = initialStoneAmount;
 
-        // Initialize prices
+        // Initialise prices
         prices[ResourceType.Food] = foodBasePrice;
         prices[ResourceType.Goods] = goodsBasePrice;
         prices[ResourceType.Stone] = stoneBasePrice;
         prices[ResourceType.Wealth] = 1.0f;
 
-        // Initialize history tracking
+        // Initialise history tracking
         foreach (ResourceType type in System.Enum.GetValues(typeof(ResourceType)))
         {
             resourceHistory[type] = new List<float>();
         }
+
+        RecordEconomySnapshot();
     }
 
-    private void Update()
+    private void OnEnable()
+    {
+        if (EventManager.Instance != null)
+        {
+            EventManager.Instance.AddListener<TimeEvents.DayChangedEvent>(OnDayChanged);
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (EventManager.Instance != null)
+        {
+            EventManager.Instance.RemoveListener<TimeEvents.DayChangedEvent>(OnDayChanged);
+        }
+    }
+
+    private void OnDayChanged(TimeEvents.DayChangedEvent evt)
     {
         // Record history every game day
-        if (TimeManager.Instance != null &&
-            TimeManager.Instance.CurrentTimeOfDay == TimeOfDay.Morning &&
-            TimeManager.Instance.CurrentHour < 7f)
+        RecordEconomySnapshot();
+    }
+
+    public float GetResourceDailyChange(ResourceType type)
+    {
+        if (dailyNetChange.ContainsKey(type))
         {
-            RecordEconomySnapshot();
+            return dailyNetChange[type];
         }
+        return 0f;
     }
 
     private void RecordEconomySnapshot()
     {
         foreach (var resource in resources)
         {
-            resourceHistory[resource.Key].Add(resource.Value);
+            ResourceType type = resource.Key;
+            float currentAmount = resource.Value;
+
+            // Calculate daily change before adding the new value
+            if (resourceHistory[type].Count > 0)
+            {
+                float previousAmount = resourceHistory[type][resourceHistory[type].Count - 1];
+                dailyNetChange[type] = currentAmount - previousAmount;
+            }
+            else
+            {
+                // First day, so 0 as the change
+                dailyNetChange[type] = 0f;
+            }
+
+            // Add current value to history
+            resourceHistory[type].Add(currentAmount);
 
             // Limit history size
-            if (resourceHistory[resource.Key].Count > 30)
+            if (resourceHistory[type].Count > 30)
             {
-                resourceHistory[resource.Key].RemoveAt(0);
+                resourceHistory[type].RemoveAt(0);
             }
         }
     }
-
 
     // Deducts resource when consumed
     public bool ConsumeResource(ResourceType type, float amount)
@@ -195,4 +232,24 @@ public class EconomyManager : MonoBehaviour
     // Get value for a resource (amount * price)
     public float GetResourceValue(ResourceType type, float amount)
         => amount * GetResourcePrice(type);
+
+    public List<float> GetResourceHistory(ResourceType type, int count = 10)
+    {
+        if (!resourceHistory.ContainsKey(type))
+        {
+            return new List<float>();
+        }
+
+        List<float> history = resourceHistory[type];
+
+        // Return the most recent 'count' entries
+        if (history.Count <= count)
+        {
+            return new List<float>(history);
+        }
+        else
+        {
+            return history.GetRange(history.Count - count, count);
+        }
+    }
 }

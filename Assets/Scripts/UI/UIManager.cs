@@ -1,82 +1,181 @@
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+using System;
 
-
-/// <summary>
-/// Centralised manager for all UI panels
-/// </summary>
 public class UIManager : MonoBehaviour
 {
-    private static UIManager instance;
-    public static UIManager Instance => instance;
+    // Singleton pattern
+    public static UIManager Instance { get; private set; }
 
-    [Header("References")]
-    [SerializeField] private List<UIPanel> panels = new();
-    private Dictionary<string, UIPanel> panelLookup = new();
+    [Header("Panel References")]
+    [SerializeField] private TimeControlPanel timeControlPanel;
+    [SerializeField] private VillageInformationPanel villageInformationPanel;
+    [SerializeField] private GameObject mainDashboard;
+
+    [Header("Villager Interaction")]
+    [SerializeField] private VillagerInfoPopupController villagerInfoPopupPrefab;
+    [SerializeField] private VillagerDetailPanelController villagerDetailPanelPrefab;
+    [SerializeField] private GameObject detailViewOverlay;
+
+    private VillagerInfoPopupController villagerInfoPopupInstance;
+    private VillagerDetailPanelController villagerDetailPanelInstance;
 
     private void Awake()
     {
-        if (instance != null && instance != this)
+        // Singleton setup
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+            InstantiateVillagerPopup();
+            InstantiateDetailPanel();
+            if (detailViewOverlay != null) detailViewOverlay.SetActive(false);
+        }
+        else
         {
             Destroy(gameObject);
-            return;
         }
-        instance = this;
+    }
 
-        // register all panels
-        foreach (var panel in panels)
+    void InstantiateVillagerPopup()
+    {
+        if (villagerInfoPopupPrefab != null && villagerInfoPopupInstance == null)
         {
-            if (panel != null)
+            Canvas mainCanvas = FindFirstObjectByType<Canvas>();
+            if (mainCanvas != null)
             {
-                panelLookup[panel.PanelID] = panel;
-                panel.Initialize();
+                villagerInfoPopupInstance = Instantiate(villagerInfoPopupPrefab, mainCanvas.transform);
+                villagerInfoPopupInstance.gameObject.SetActive(false);
+                villagerInfoPopupInstance.name = "VillagerInfoPopup_Instance";
+            }
+            else
+            {
+                Debug.LogError("UIManager could not find a Canvas to instantiate the Villager Info Popup into!");
             }
         }
-    }
-
-    public T GetPanel<T>(string panelID) where T: UIPanel
-    {
-        if (panelLookup.TryGetValue(panelID, out UIPanel panel))
+        else if (villagerInfoPopupPrefab == null)
         {
-            return panel as T;
+            Debug.LogError("VillagerInfoPopup Prefab not assigned in UIManager Inspector!");
         }
-        return null;
     }
 
-    public void ShowPanel(string panelID)
+    void InstantiateDetailPanel()
     {
-        if (panelLookup.TryGetValue(panelID, out UIPanel panel))
+        if (villagerDetailPanelPrefab != null && villagerDetailPanelInstance == null)
         {
-            panel.Show();
+            Canvas mainCanvas = FindFirstObjectByType<Canvas>();
+            if (mainCanvas != null)
+            {
+                villagerDetailPanelInstance = Instantiate(villagerDetailPanelPrefab, mainCanvas.transform);
+                villagerDetailPanelInstance.gameObject.SetActive(false); // Start hidden
+                villagerDetailPanelInstance.name = "VillagerDetailPanel_Instance";
+            }
+            else { Debug.LogError("UIManager could not find Canvas for Detail Panel!"); }
+        }
+        else if (villagerDetailPanelPrefab == null) { Debug.LogError("VillagerDetailPanel Prefab not assigned in UIManager!"); }
+    }
+
+    private void Start()
+    {
+        // Subscribe to important events
+        if (EventManager.Instance != null)
+        {
+            EventManager.Instance.AddListener<TimeEvents.TimeOfDayChangedEvent>(OnTimeOfDayChanged);
         }
         else
         {
-            Debug.LogWarning($"Panel with ID '{panelID}' not found");
+            Debug.LogWarning("EventManager instance not found");
         }
     }
 
-    public void HidePanel(string panelID)
+    private void OnDestroy()
     {
-        if (panelLookup.TryGetValue(panelID, out UIPanel panel))
+        // Unsubscribe from events
+        if (EventManager.Instance != null)
         {
-            panel.Hide();
+            EventManager.Instance.RemoveListener<TimeEvents.TimeOfDayChangedEvent>(OnTimeOfDayChanged);
+        }
+    }
+
+    private void OnTimeOfDayChanged(TimeEvents.TimeOfDayChangedEvent evt)
+    {
+        // Update UI components when time changes
+        if (timeControlPanel != null)
+        {
+            timeControlPanel.UpdateTimeDisplay();
+        }
+    }
+
+    // Show/hide time control panel
+    public void ToggleTimeControlPanel(bool show)
+    {
+        if (timeControlPanel != null)
+        {
+            timeControlPanel.gameObject.SetActive(show);
+        }
+    }
+
+    // Villager Popup
+    public void ShowVillagerPopup(Villager villager)
+    {
+        if (villagerInfoPopupInstance != null)
+        {
+            villagerInfoPopupInstance.ShowPopup(villager);
         }
         else
         {
-            Debug.LogWarning($"Panel with ID '{panelID}' not found");
+            Debug.LogWarning("Villager Info Popup instance is missing. Cannot show popup.");
         }
     }
 
-    public void TogglePanel(string panelID)
+    public void HideVillagerPopup()
     {
-        if (panelLookup.TryGetValue(panelID, out UIPanel panel))
+        if (villagerInfoPopupInstance != null && villagerInfoPopupInstance.gameObject.activeInHierarchy)
         {
-            panel.Toggle();
-        }
-        else
-        {
-            Debug.LogWarning($"Panel with ID '{panelID}' not found");
+            villagerInfoPopupInstance.HidePopup();
         }
     }
 
+    public void ShowVillagerDetailPanel(Villager villager)
+    {
+        HideVillagerPopup(); // Close small popup if open
+        if (villagerDetailPanelInstance != null)
+        {
+            villagerDetailPanelInstance.ShowPanel(villager);
+            if (detailViewOverlay != null) detailViewOverlay.SetActive(true); // Show overlay
+        }
+        else { Debug.LogWarning("Villager Detail Panel instance is missing."); }
+    }
+
+    public void HideVillagerDetailPanel()
+    {
+        if (villagerDetailPanelInstance != null && villagerDetailPanelInstance.gameObject.activeInHierarchy)
+        {
+            villagerDetailPanelInstance.HidePanel();
+            if (detailViewOverlay != null) detailViewOverlay.SetActive(false); // Hide overlay
+        }
+    }
+
+    public void ShowMainDashboard()
+    {
+        if (mainDashboard != null)
+        {
+            mainDashboard.SetActive(true);
+        }
+    }
+
+    // Method to close the dashboard
+    public void CloseDashboard()
+    {
+        if (mainDashboard != null)
+        {
+            mainDashboard.SetActive(false);
+        }
+    }
+
+    public GameObject GetDashboard()
+    {
+        return mainDashboard;
+    }
 }

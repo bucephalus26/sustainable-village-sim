@@ -6,7 +6,7 @@ public class VillagerMood : MonoBehaviour
     [Header("Happiness Settings")]
     [SerializeField] [Range(0f, 100f)] private float happiness = 50f;
     [SerializeField] private string currentMood;
-    [SerializeField] private bool showMoodIndicator = true;
+    [SerializeField] private bool showMoodIndicator = false;
 
     [Header("Factor Weights")]
     [SerializeField] [Range(0f, 2f)] private float needsWeight = 1.0f;
@@ -32,9 +32,6 @@ public class VillagerMood : MonoBehaviour
     private VillagerBrain brain;
     private SpriteRenderer moodIndicator;
 
-    private float updateTimer = 0f;
-    private float updateInterval = 3f;
-
     private List<float> happinessHistory = new();
     private const int maxHistoryLength = 10;
 
@@ -50,6 +47,7 @@ public class VillagerMood : MonoBehaviour
             return MoodState.Content;
         }
     }
+    private MoodState previousMood;
 
     public float HappinessTrend
     {
@@ -105,10 +103,11 @@ public class VillagerMood : MonoBehaviour
         }
     }
 
-
     public void UpdateHappiness()
     {
         if (brain?.NeedsManager == null) return;
+
+        previousMood = CurrentMood;
 
         // Calculate satisfaction factors
         needsSatisfaction = CalculateNeedsSatisfaction();
@@ -155,6 +154,18 @@ public class VillagerMood : MonoBehaviour
         happiness = Mathf.Lerp(happiness, targetHappiness, Time.deltaTime * 0.1f);
 
         currentMood = CurrentMood.ToString();
+
+        if (previousMood != CurrentMood)
+        {
+            // Trigger event for mood change
+            EventManager.Instance.TriggerEvent(new VillagerEvents.MoodChangedEvent
+            {
+                VillagerName = villager.villagerName,
+                OldMood = previousMood,
+                NewMood = CurrentMood,
+                HappinessValue = happiness
+            });
+        }
 
         // Update visual
         if (showMoodIndicator)
@@ -241,7 +252,7 @@ public class VillagerMood : MonoBehaviour
         return totalProgress / activeGoals.Count;
     }
 
-    // Add this method to handle happiness boosts from completing goals
+    // method to handle happiness boosts from completing goals
     public void AddHappinessBoost(float boostAmount, float durationSeconds)
     {
         temporaryBoost = boostAmount;

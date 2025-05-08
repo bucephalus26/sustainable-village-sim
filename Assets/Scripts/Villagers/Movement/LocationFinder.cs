@@ -107,37 +107,45 @@ public class LocationFinder : MonoBehaviour
         return null;
     }
 
-    public Transform GetLeisureLocation()
+    public Building GetLeisureBuilding()
     {
-        // Pick appropriate leisure location based on personality if available
         VillagerPersonality personality = GetComponent<VillagerPersonality>();
+        Building leisureBuilding = null;
 
-        if (personality != null && personality.sociability > 0.7f)
+        BuildingType preferredType;
+        if (personality != null)
         {
-            // More social villagers prefer taverns
-            Building tavern = BuildingManager.Instance.GetRandomBuildingByType(BuildingType.Tavern);
-            if (tavern != null) return tavern.GetEntrancePoint();
+            if (personality.sociability > 0.7f) preferredType = BuildingType.Tavern;
+            else if (personality.sociability < 0.3f) preferredType = BuildingType.Church; // for less social people
+            else preferredType = (Random.value < 0.6f) ? BuildingType.Tavern : BuildingType.Church;
         }
-        else if (personality != null && personality.sociability < 0.3f)
+        else
         {
-            // Less social villagers prefer smaller gatherings like church
-            Building church = BuildingManager.Instance.GetRandomBuildingByType(BuildingType.Church);
-            if (church != null) return church.GetEntrancePoint();
+            preferredType = (Random.value < 0.6f) ? BuildingType.Tavern : BuildingType.Church;
         }
 
-        // Randomly select between tavern or church as fallback
-        BuildingType[] leisureTypes = { BuildingType.Tavern, BuildingType.Church };
-        BuildingType selectedType = leisureTypes[UnityEngine.Random.Range(0, leisureTypes.Length)];
+        leisureBuilding = BuildingManager.Instance.GetRandomBuildingByType(preferredType);
 
-        Building leisureBuilding = BuildingManager.Instance.GetRandomBuildingByType(selectedType);
+        if (leisureBuilding == null)
+        {
+            BuildingType fallbackType = (preferredType == BuildingType.Tavern) ? BuildingType.Church : BuildingType.Tavern;
+            leisureBuilding = BuildingManager.Instance.GetRandomBuildingByType(fallbackType);
+        }
 
-        return leisureBuilding?.GetEntrancePoint() ?? transform;
+        return leisureBuilding;
     }
 
-    // Method for getting a random position nearby for idle wandering
+    // gets a random position nearby for idle wandering
     public Vector3 GetRandomNearbyPosition(float radius = 3f)
     {
         Vector2 randomDirection = UnityEngine.Random.insideUnitCircle * radius;
         return new Vector3(transform.position.x + randomDirection.x, transform.position.y + randomDirection.y, transform.position.z);
     }
+
+    public Transform GetLeisureLocation()
+    {
+        Building building = GetLeisureBuilding();
+        return building?.GetEntrancePoint() ?? transform;
+    }
+
 }
