@@ -21,7 +21,7 @@ public class ResourceChartController : MonoBehaviour
     [SerializeField] private string titleFormat = "Resource History (Last {0} Days)";
     [SerializeField] private int historyDaysToShow = 5;
     [SerializeField] private int yAxisSteps = 4; // For 0, 25, 50, 75, 100
-    [SerializeField] private float yAxisPadding = 0.1f; // Add 10% padding above max value
+    [SerializeField] private float yAxisPadding = 0.1f;
 
     [Header("Resource Colors")]
     [SerializeField] private Color foodColor = new(46f / 255f, 204f / 255f, 113f / 255f); // #2ecc71
@@ -56,11 +56,11 @@ public class ResourceChartController : MonoBehaviour
             return;
         }
 
-        // 1. Prepare Data
+        // Prepare Data
         List<UILineChart.LineData> chartData = new();
         float overallMinY = float.MaxValue;
         float overallMaxY = float.MinValue;
-        int maxDataPoints = 0; // How many days/points are we plotting
+        int maxDataPoints = 0; // How many days/points plotting
 
         foreach (var pair in resourceColors)
         {
@@ -169,7 +169,6 @@ public class ResourceChartController : MonoBehaviour
             if (labelText != null)
             {
                 // Calculate the day number for this historical point
-                // Assuming the last point is 'currentDay', the first is 'currentDay - pointCount + 1'
                 int dayNumber = currentDay - pointCount + 1 + i;
                 labelText.text = $"Day {dayNumber}";
             }

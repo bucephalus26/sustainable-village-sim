@@ -125,7 +125,7 @@ public class VillagerDetailPanelController : MonoBehaviour
         CreateStatItem("Happiness", $"{currentVillager.happiness:F0}%");
         CreateStatItem("Personal Wealth", currentVillager.personalWealth.ToString("F1"));
         string activity = currentVillager.Brain?.CurrentState?.GetType().Name.Replace("State", "") ?? "Idle";
-        CreateStatItem("Current Activity", activity);
+        CreateStatItem("Current Activity", currentVillager.CurrentActivityDescription);
     }
 
     void CreateStatItem(string label, string value)

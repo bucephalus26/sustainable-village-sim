@@ -54,7 +54,7 @@ public class Villager : MonoBehaviour
 
     private void Update()
     {
-        // Update inspector debug info if brain is initialized
+        // Update inspector debug info if brain is initialised
         if (Brain != null && Brain.NeedsManager != null)
         {
             // Update current state
@@ -77,25 +77,29 @@ public class Villager : MonoBehaviour
             // Update current activity
             if (Brain.CurrentState is WorkingState)
             {
-                currentActivity = $"Working as {professionName}";
+                currentActivity = $"Working";
             }
             else if (Brain.CurrentState is SocializingState)
             {
-                currentActivity = "Socializing";
+                currentActivity = $"Socialising";
             }
             else if (Brain.CurrentState is SleepingState)
             {
-                currentActivity = "Sleeping";
+                currentActivity = $"Sleeping";
             }
             else if (Brain.CurrentState is NeedFulfillmentState)
             {
                 currentActivity = $"Satisfying need";
             }
+            else if (Brain.CurrentState is RelaxAtHomeState)
+            {
+                currentActivity = $"Relaxing at Home";
+            }
             else if (Brain.CurrentState is IdleState)
             {
-                currentActivity = "Idle";
+                currentActivity = CurrentActivityDescription;
             }
-        }
+        }    
     }
 
     public void EarnWealth(float amount)
@@ -118,6 +122,17 @@ public class Villager : MonoBehaviour
         if (villagerSpriteRenderer != null && villagerSpriteRenderer.enabled != isVisible)
         {
             villagerSpriteRenderer.enabled = isVisible;
+        }
+    }
+
+    public string CurrentActivityDescription
+    {
+        get
+        {
+            if (Brain?.CurrentState == null) return "Idle";
+            if (Brain.CurrentState is IdleState idleState) return idleState.DetailedIdleActivity;
+            else if (Brain.CurrentState is RelaxAtHomeState) { return "Relaxing at Home"; }
+            else return Brain.CurrentState.GetType().Name.Replace("State", "");
         }
     }
 

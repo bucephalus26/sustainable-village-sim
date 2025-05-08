@@ -9,7 +9,7 @@ public class SocializingState : VillagerBaseState
 
     public SocializingState(VillagerBrain brain) : base(brain)
     {
-        // Longer duration for socializing - between 1-3 hours of game time
+        // Longer duration for socialising - between 1-3 hours of game time
         socialDuration = UnityEngine.Random.Range(1f, 3f) * 60f / TimeManager.Instance.TimeScaleFactor;
         timer = 0f;
     }
@@ -33,14 +33,14 @@ public class SocializingState : VillagerBaseState
         {
             timer += Time.deltaTime;
 
-            // Recover social need while socializing
+            // Recover social need while socialising
             var socialNeed = brain.NeedsManager.GetAllNeeds().FirstOrDefault(n => n.Name == "Social");
             if (socialNeed != null)
             {
                 socialNeed.FulfillGradually(Time.deltaTime);
             }
 
-            // After socializing for a while, let the behavior system decide what to do next
+            // After socialising for a while, let the behaviour system decide what to do next
             if (timer >= socialDuration)
             {
                 brain.DetermineNextAction();

@@ -38,7 +38,7 @@ public class WorkingState : VillagerBaseState
                 return;
             }
 
-            // If it's no longer working hours or we've worked enough, stop working
+            // If it's no longer working hours or worked enough, stop working
             if (!brain.Profession.IsWorkingHour() || timer >= workDuration)
             {
                 brain.DetermineNextAction();

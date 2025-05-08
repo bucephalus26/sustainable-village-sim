@@ -49,7 +49,7 @@ public class NeedFulfillmentState : VillagerBaseState
         }
         else
         {
-            // If we can't reach the need location after some time, try a different approach
+            // If we can't reach the need location after some time, try diff approach
             fulfillmentTimer += Time.deltaTime;
             if (fulfillmentTimer > 10f) // 10 seconds of real time
             {

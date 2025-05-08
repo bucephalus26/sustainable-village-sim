@@ -90,7 +90,7 @@ public class VillageInformationPanel : MonoBehaviour
             dashboardButton.onClick.AddListener(OpenDashboard);
         }
 
-        // Initialize UI state
+        // Initialise UI state
         SetActiveTab(activeTab);
     }
 

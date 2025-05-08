@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using System.Linq; // For FirstOrDefault
+using System.Linq;
 using UnityEngine.EventSystems;
 using System.Collections.Generic;
 
@@ -63,7 +63,7 @@ public class VillagerInfoPopupController : MonoBehaviour
 
         currentVillager = villager;
 
-        // --- Populate UI ---
+        // Populate UI 
         villagerNameText.text = villager.villagerName;
         professionValueText.text = GetProfessionString(villager);
         activityValueText.text = GetActivityString(villager);
@@ -72,14 +72,14 @@ public class VillagerInfoPopupController : MonoBehaviour
         UpdateNeedsDisplay(villager.Brain.NeedsManager);
 
 
-        // --- Position UI ---
+        // Position UI
         PositionPopup(villager.transform.position);
 
-        // --- Show ---
+        // Show 
         canvasGroup.alpha = 1f;
         canvasGroup.interactable = true;
         canvasGroup.blocksRaycasts = true;
-        gameObject.SetActive(true); // Make sure GO is active
+        gameObject.SetActive(true);
     }
 
     public void HidePopup()
@@ -145,19 +145,19 @@ public class VillagerInfoPopupController : MonoBehaviour
         // 5. Clamp the desired Top-Left position to screen bounds
         // Pivot is (0, 1) - Top Left
         float clampedX = Mathf.Clamp(desiredTopLeftPos.x,
-                                    screenPadding,                     // Min X (Left edge can't go past left padding)
-                                    Screen.width - screenPadding - popupWidth); // Max X (Left edge can't make right edge go past right padding)
+                                    screenPadding,
+                                    Screen.width - screenPadding - popupWidth);
 
         float clampedY = Mathf.Clamp(desiredTopLeftPos.y,
-                                    screenPadding + popupHeight,       // Min Y (Top edge can't make bottom edge go past bottom padding)
-                                    Screen.height - screenPadding);    // Max Y (Top edge can't go past top padding)
+                                    screenPadding + popupHeight,      
+                                    Screen.height - screenPadding); 
         // Set anchored position
         rectTransform.position = new Vector3(clampedX, clampedY, villagerScreenCenter.z);
     }
 
     void OnViewDetailsClicked()
     {
-        Debug.Log("--- OnViewDetailsClicked METHOD ENTERED ---");
+        Debug.Log("OnViewDetailsClicked METHOD ENTERED");
         if (currentVillager != null && UIManager.Instance != null)
         {
             // Tell UIManager to open the detailed panel
@@ -201,7 +201,7 @@ public class VillagerInfoPopupController : MonoBehaviour
         if (canvasGroup.alpha < 0.9f || !canvasGroup.interactable || currentVillager == null) return;
 
 
-        // --- Use Event System to see what was clicked ---
+        // Use Event System to see what was clicked
         PointerEventData pointerData = new PointerEventData(EventSystem.current)
         {
             position = Input.mousePosition
@@ -210,7 +210,7 @@ public class VillagerInfoPopupController : MonoBehaviour
         List<RaycastResult> results = new List<RaycastResult>();
         EventSystem.current.RaycastAll(pointerData, results);
 
-        // Assume we should close unless we hit something belonging to this popup
+        // close unless we hit something belonging to popup
         bool clickedOnPopup = false;
         if (results.Count > 0)
         {
@@ -225,10 +225,9 @@ public class VillagerInfoPopupController : MonoBehaviour
             }
         }
 
-        // --- Close only if the click was NOT on the popup UI ---
+        // Close only if the click was NOT on the popup UI
         if (!clickedOnPopup)
         {
-            // Optional: Add the check to prevent closing if clicking the original villager again
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
             RaycastHit2D hit = Physics2D.GetRayIntersection(ray); // Use 2D raycast
             if (hit.collider != null && hit.collider.gameObject == currentVillager.gameObject)
@@ -238,10 +237,9 @@ public class VillagerInfoPopupController : MonoBehaviour
             else
             {
                 // Clicked outside the popup AND outside the villager that opened it
-                Debug.Log("Clicked outside popup UI, hiding."); // Add log for confirmation
+                Debug.Log("Clicked outside popup UI, hiding."); 
                 HidePopup();
             }
         }
-        // else { Debug.Log("Clicked inside popup UI."); } // Optional log
     }
 }

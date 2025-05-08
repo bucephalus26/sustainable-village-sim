@@ -39,7 +39,7 @@ public class TimeControlPanel : MonoBehaviour
         timeManager = TimeManager.Instance;
         gameManager = GameManager.Instance;
 
-        // Initialize UI elements
+        // Initialise UI elements
         if (timeManager != null)
         {
             UpdateTimeDisplay();

@@ -167,7 +167,7 @@ public class UILineChart : Graphic
         }
     }
 
-    // Helper to convert data point (index, value) to local chart coordinates
+    // convert data point (index, value) to local chart coordinates
     private Vector2 GetLocalPosition(int index, float value, int numSegments)
     {
         float x = 0;
@@ -189,7 +189,7 @@ public class UILineChart : Graphic
         return new Vector2(x, y);
     }
 
-    // Helper to draw a line segment with thickness
+    // draw a line segment with thickness
     private void DrawLine(VertexHelper vh, Vector2 start, Vector2 end, Color lineColor, float thickness)
     {
         Vector2 dir = (end - start).normalized;
@@ -203,7 +203,7 @@ public class UILineChart : Graphic
         AddQuad(vh, p1, p2, p3, p4, lineColor);
     }
 
-    // Helper to draw a filled circle using triangles fan
+    // draw a filled circle using triangles fan
     private void DrawCircle(VertexHelper vh, Vector2 center, float radius, Color circleColor, int segments)
     {
         if (segments < 3) segments = 3; // Minimum segments for a triangle
@@ -242,7 +242,7 @@ public class UILineChart : Graphic
         }
     }
 
-    // Helper to add a quad (two triangles) to VertexHelper
+    // add a quad (two triangles) to VertexHelper
     private void AddQuad(VertexHelper vh, Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, Color quadColor)
     {
         int startIndex = vh.currentVertCount;

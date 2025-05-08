@@ -22,12 +22,12 @@ public class VillagerPersonality : MonoBehaviour
         villager = GetComponent<Villager>();
     }
 
-    // Initialize with random traits
+    // Initialise with random traits
     public void Initialize(bool randomize = true)
     {
         if (randomize)
         {
-            // Create somewhat balanced personalities with some variance
+            // Create balanced personalities with some variance
             sociability = Random.Range(0.3f, 0.8f);
             workEthic = Random.Range(0.4f, 0.9f);
             resilience = Random.Range(0.3f, 0.8f);
@@ -73,7 +73,7 @@ public class VillagerPersonality : MonoBehaviour
         return (primaryTrait * primaryWeight) + (secondaryTrait * (1 - primaryWeight));
     }
 
-    // Print personality profile (for debugging/visualization)
+    // Print personality profile (debugging/visualization)
     public string GetPersonalityProfile()
     {
         return $"{villager.villagerName} Personality Profile:\n" +

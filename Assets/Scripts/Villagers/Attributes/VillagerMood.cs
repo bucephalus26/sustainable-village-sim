@@ -252,7 +252,7 @@ public class VillagerMood : MonoBehaviour
         return totalProgress / activeGoals.Count;
     }
 
-    // Add this method to handle happiness boosts from completing goals
+    // method to handle happiness boosts from completing goals
     public void AddHappinessBoost(float boostAmount, float durationSeconds)
     {
         temporaryBoost = boostAmount;

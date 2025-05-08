@@ -25,7 +25,7 @@ public class GoalItemUI : MonoBehaviour
         if (badgeText != null) badgeText.text = GetGoalTypeName(goal.type);
         if (goalDescriptionText != null) goalDescriptionText.text = goal.description;
 
-        // 3. Calculate and Set Progress
+        // Calculate and Set Progress
         float progressRatio = (goal.target > 0) ? Mathf.Clamp01(goal.progress / goal.target) : 0f;
 
         if (progressBarFill != null)
@@ -55,7 +55,7 @@ public class GoalItemUI : MonoBehaviour
         }
     }
 
-    // Helper to format the goal type name for the badge
+    // format the goal type name for the badge
     private string GetGoalTypeName(GoalType type)
     {
         switch (type)
@@ -69,7 +69,7 @@ public class GoalItemUI : MonoBehaviour
         }
     }
 
-    // Helper to format progress/target values
+    // formats progress/target values
     private string FormatProgressValue(float value, GoalType type)
     {
         switch (type)

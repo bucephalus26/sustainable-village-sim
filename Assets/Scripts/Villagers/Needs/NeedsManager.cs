@@ -75,7 +75,7 @@ public class NeedsManager : INeedsManager
             .FirstOrDefault();
 
         // Only return if it's somewhat urgent (> 0.4 urgency)
-        if (mostUrgentNeed != null && mostUrgentNeed.GetUrgency() > 0.4f)
+        if (mostUrgentNeed != null && mostUrgentNeed.GetUrgency() > 0.5f)
         {
             return mostUrgentNeed;
         }
